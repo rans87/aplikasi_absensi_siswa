@@ -14,26 +14,65 @@
                 <form action="{{ route('guru.store') }}" method="POST">
                     @csrf
 
+                    {{-- ================= DATA GURU ================= --}}
+                    <h5 class="mb-3 text-primary"><i class="bi bi-person-badge"></i> Data Guru</h5>
+
                     <div class="mb-3">
                         <label class="form-label fw-bold">Nama Guru</label>
-                        <input type="text" name="nama" class="form-control" required>
+                        <input type="text" name="nama" value="{{ old('nama') }}"
+                            class="form-control @error('nama') is-invalid @enderror" required>
+                        @error('nama')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-bold">NIP</label>
-                        <input type="text" name="nip" class="form-control">
+                        <input type="text" name="nip" value="{{ old('nip') }}"
+                            class="form-control @error('nip') is-invalid @enderror">
+                        @error('nip')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">No HP</label>
+                        <input type="text" name="no_hp" value="{{ old('no_hp') }}"
+                            class="form-control @error('no_hp') is-invalid @enderror">
+                        @error('no_hp')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <hr>
+
+                    {{-- ================= AKUN LOGIN ================= --}}
+                    <h5 class="mb-3 text-success"><i class="bi bi-shield-lock"></i> Akun Login Guru</h5>
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold">No HP</label>
-                        <input type="text" name="no_hp" class="form-control">
+                        <label class="form-label fw-bold">Email</label>
+                        <input type="email" name="email" value="{{ old('email') }}"
+                            class="form-control @error('email') is-invalid @enderror" required>
+                        @error('email')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Password</label>
+                        <input type="password" name="password" class="form-control @error('password') is-invalid @enderror"
+                            required>
+                        @error('password')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    {{-- ================= BUTTON ================= --}}
                     <div class="d-flex justify-content-between">
                         <a href="{{ route('guru.index') }}" class="btn btn-secondary">
                             <i class="bi bi-arrow-left"></i> Kembali
                         </a>
-                        <button class="btn btn-primary">
+                        <button type="submit" class="btn btn-primary">
                             <i class="bi bi-save"></i> Simpan
                         </button>
                     </div>

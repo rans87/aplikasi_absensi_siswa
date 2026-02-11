@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class Siswa extends Model
+class Siswa extends Authenticatable
 {
     use HasFactory;
 
@@ -20,12 +20,15 @@ class Siswa extends Model
         'qr_code',
     ];
 
-
     protected static function booted()
     {
         static::creating(function ($siswa) {
-            $siswa->qr_code = Str::uuid(); // isi QR unik
+            if (empty($siswa->qr_code)) {
+                $siswa->qr_code = (string) Str::uuid();
+            }
         });
     }
 
+    // Default Laravel behavior uses 'id' and 'id' as identifier name and identifier.
+    // We removed custom overrides to ensure standard session behavior.
 }

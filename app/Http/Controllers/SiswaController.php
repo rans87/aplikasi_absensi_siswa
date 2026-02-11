@@ -6,6 +6,7 @@ use App\Models\Siswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cache;
 
 class SiswaController extends Controller
 {
@@ -76,40 +77,53 @@ class SiswaController extends Controller
     {
         $url = env('API_ROMBEL_URL');
 
-        $response = Http::get($url);
+        try {
+            // Timeout diperpanjang hingga 60 detik karena data cukup besar (2.8MB+)
+            $response = Http::timeout(60)->get($url);
 
-        if (!$response->successful()) {
-            return back()->with('error', 'Gagal mengambil data dari API');
-        }
-
-        $result = $response->json();
-
-        // Kalau API bungkus dalam key "data"
-        $dataSiswa = $result['data'] ?? $result;
-
-        if (!is_array($dataSiswa)) {
-            return back()->with('error', 'Format data API tidak sesuai');
-        }
-
-        foreach ($dataSiswa as $item) {
-
-            // Skip kalau struktur tidak lengkap
-            if (!isset($item['no_induk'], $item['nama'], $item['jenis_kelamin'])) {
-                continue;
+            if (!$response->successful()) {
+                return back()->with('error', 'Gagal mengambil data dari API (Server Pusat Sibuk)');
             }
 
-            Siswa::updateOrCreate(
-                ['nis' => $item['no_induk']],
-                [
-                    'nama' => $item['nama'],
-                    'no_hp' => $item['no_telp'] ?? null,
-                    'jenis_kelamin' => $item['jenis_kelamin'],
-                    'qr_code' => Str::uuid(),
-                ]
-            );
-        }
+            $result = $response->json();
+            $dataSiswa = $result['data'] ?? $result;
 
-        return back()->with('success', 'Data siswa berhasil disinkron dari API');
+            if (!is_array($dataSiswa)) {
+                return back()->with('error', 'Format data API tidak sesuai');
+            }
+
+            foreach ($dataSiswa as $item) {
+                if (!isset($item['no_induk'], $item['nama'])) {
+                    continue;
+                }
+
+                $siswa = Siswa::where('nis', $item['no_induk'])->first();
+                
+                if (!$siswa) {
+                    $siswa = new Siswa();
+                    $siswa->nis = $item['no_induk'];
+                    $siswa->qr_code = (string) Str::uuid();
+                }
+
+                $siswa->nama = $item['nama'];
+                $siswa->no_hp = $item['no_telp'] ?? null;
+                $siswa->jenis_kelamin = in_array($item['jenis_kelamin'], ['L', 'P']) ? $item['jenis_kelamin'] : 'L';
+                $siswa->save();
+            }
+
+            // Hapus cache login agar siswa bisa langsung login dengan data terbaru
+            Cache::forget('api_siswa_data');
+
+            return back()->with('success', 'Data siswa berhasil disinkron dari API');
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Koneksi API Gagal: ' . $e->getMessage());
+        }
+    }
+
+    public function show($id)
+    {
+        abort(404); // atau isi sesuai kebutuhan
     }
 
 }

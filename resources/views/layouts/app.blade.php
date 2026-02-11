@@ -1,196 +1,293 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'Dashboard')</title>
+    <title>@yield('title') - PresenceX</title>
 
-    {{-- Fonts --}}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.0.12/index.css">
-
-    {{-- Plugins --}}
-    <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.10.1/styles/overlayscrollbars.min.css">
+    <!-- Google Fonts: Outfit -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- OverlayScrollbars -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.3.0/styles/overlayscrollbars.min.css">
+    <!-- AdminLTE v4 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0-beta2/dist/css/adminlte.min.css">
 
-    {{-- AdminLTE --}}
-    <link rel="stylesheet" href="{{ asset('assets/css/adminlte.css') }}">
-
-    {{-- Custom Theme (Putih + Biru Modern) --}}
     <style>
+        :root {
+            --primary-blue: #2563eb;
+            --secondary-blue: #3b82f6;
+            --light-blue: #f0f9ff;
+            --soft-blue: #e0f2fe;
+            --dark-blue: #1e3a8a;
+            --deep-blue: #0f172a;
+            --pure-white: #ffffff;
+            --bg-gray: #f8fafc;
+            --border-color: #f1f5f9;
+            --accent-glow: rgba(37, 99, 235, 0.1);
+            --rose: #e11d48;
+            --emerald: #10b981;
+            --amber: #f59e0b;
+        }
+
         body {
-            font-family: 'Source Sans 3', sans-serif;
-            background-color: #f4f7fb;
+            font-family: 'Outfit', 'Inter', sans-serif;
+            background-color: var(--bg-gray);
+            color: #1e293b;
+            overflow-x: hidden;
+            letter-spacing: -0.01em;
         }
 
-        .app-main {
-            padding: 1.5rem;
+        /* High Performance Layout */
+        .app-wrapper {
+            background-color: var(--bg-gray);
         }
 
-        .card {
-            border: none;
-            border-radius: 16px;
-            box-shadow: 0 6px 18px rgba(13, 110, 253, 0.08);
+        /* Premium Header */
+        .app-header {
+            background: rgba(255, 255, 255, 0.85) !important;
+            backdrop-filter: blur(12px) !important;
+            border-bottom: 1px solid var(--border-color) !important;
+            box-shadow: 0 4px 15px -1px rgba(0, 0, 0, 0.02) !important;
+            padding: 0.5rem 0 !important;
         }
 
-        .card-header {
-            background: transparent;
-            border-bottom: none;
+        /* Modern Sidebar */
+        .app-sidebar {
+            background: var(--deep-blue) !important;
+            border-right: none !important;
+            box-shadow: 10px 0 30px rgba(0,0,0,0.1) !important;
+        }
+
+        .sidebar-brand {
+            border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+            padding: 2.5rem 1.75rem !important;
+        }
+
+        .nav-link {
+            border-radius: 18px !important;
+            margin: 6px 18px !important;
+            padding: 14px 20px !important;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            color: rgba(255,255,255,0.6) !important;
             font-weight: 600;
-            color: #0d6efd;
+            font-size: 0.95rem;
+        }
+
+        .nav-link i {
+            font-size: 1.35rem;
+            margin-right: 14px;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0.8;
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue)) !important;
+            color: var(--pure-white) !important;
+            box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.5) !important;
+        }
+
+        .nav-link.active i {
+            transform: scale(1.1) rotate(5deg);
+            opacity: 1;
+        }
+
+        .nav-link:hover:not(.active) {
+            background-color: rgba(255,255,255,0.08) !important;
+            color: var(--pure-white) !important;
+            transform: translateX(8px);
+        }
+
+        /* Global UI Elements */
+        .card {
+            background: var(--pure-white);
+            border-radius: 32px !important;
+            border: 1px solid var(--border-color) !important;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04) !important;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        /* Action Buttons */
+        .btn {
+            border-radius: 20px !important;
+            padding: 14px 30px !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.3px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
         }
 
         .btn-primary {
-            background: linear-gradient(45deg, #0d6efd, #3a8bfd);
-            border: none;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue)) !important;
+            border: none !important;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25) !important;
         }
 
         .btn-primary:hover {
-            opacity: 0.9;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(37, 99, 235, 0.35) !important;
+            filter: brightness(1.1);
         }
 
-        .table thead {
-            background-color: #e9f2ff;
+        /* Modern Form Styling */
+        .form-control, .form-select {
+            padding: 14px 20px !important;
+            border-radius: 18px !important;
+            border: 2px solid #f1f5f9 !important;
+            background-color: #f8fafc !important;
+            font-weight: 500 !important;
+            transition: all 0.3s ease !important;
         }
 
-        .table tbody tr:hover {
-            background-color: #f1f6ff;
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-blue) !important;
+            background-color: #ffffff !important;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1) !important;
         }
 
-        .content-header h1 {
-            font-weight: 700;
-            color: #0d6efd;
+        .form-label {
+            margin-bottom: 10px !important;
+            font-weight: 700 !important;
+            color: var(--deep-blue) !important;
+            font-size: 0.9rem !important;
+            padding-left: 5px;
+        }
+
+        /* Ultra-Modern Tables */
+        .table {
+            --bs-table-hover-bg: rgba(37, 99, 235, 0.02);
+            margin-bottom: 0;
+        }
+
+        .table thead th {
+            background-color: #f8fafc !important;
+            color: #64748b !important;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.12em;
+            padding: 1.75rem 1.5rem !important;
+            border: none !important;
+        }
+
+        .table tbody td {
+            padding: 1.75rem 1.5rem !important;
+            border-bottom: 1px solid var(--border-color) !important;
+            vertical-align: middle;
+        }
+
+        /* App Main Context */
+        .app-main {
+            padding: 3rem !important;
+            background-color: var(--bg-gray);
+        }
+
+        @media (max-width: 768px) {
+            .app-main {
+                padding: 1.5rem 1rem !important;
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-gray); }
+        ::-webkit-scrollbar-thumb { 
+            background: #cbd5e1; 
+            border-radius: 20px;
+            border: 2px solid var(--bg-gray);
+        }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Smooth Animations */
+        .fade-in { animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(30px) scale(0.98); } 
+            to { opacity: 1; transform: translateY(0) scale(1); } 
+        }
+
+        .hover-up:hover {
+            transform: translateY(-8px) scale(1.01);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
     </style>
 
     @stack('styles')
 </head>
-
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
     <div class="app-wrapper">
-
-        {{-- HEADER --}}
         @include('components.header')
-
-        {{-- SIDEBAR --}}
         @include('components.sidebar')
 
-        {{-- MAIN CONTENT --}}
-        <main class="app-main">
-            @yield('content')
+        <main class="app-main fade-in">
+            <div class="container-fluid">
+                @if(session('success'))
+                    <div class="alert alert-success border-0 shadow-sm rounded-4 mb-4 fade show d-flex align-items-center" role="alert">
+                        <i class="bi bi-check-circle-fill me-3 fs-4"></i>
+                        <div>{{ session('success') }}</div>
+                        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div class="alert alert-danger border-0 shadow-sm rounded-4 mb-4 fade show d-flex align-items-center" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
+                        <div>{{ session('error') }}</div>
+                        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
+                @yield('content')
+            </div>
         </main>
 
-        {{-- FOOTER --}}
-        @include('components.footer')
-
+        <footer class="app-footer bg-white border-top py-4 text-center">
+            <div class="container">
+                <span class="text-muted fw-medium"><strong>PresenceX</strong> &copy; 2024. Crafted for Excellence.</span>
+            </div>
+        </footer>
     </div>
 
-    {{-- SCRIPTS --}}
-    @include('components.scripts')
-    @stack('scripts')
-
-    {{-- Chart.js --}}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.3.0/browser/overlayscrollbars.browser.es6.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0-beta2/dist/js/adminlte.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
+        function confirmLogout() {
+            Swal.fire({
+                title: 'Konfirmasi Keluar',
+                text: "Apakah Anda yakin ingin mengakhiri sesi ini?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#f1f5f9',
+                cancelButtonTextColor: '#1e293b',
+                confirmButtonText: 'Ya, Keluar',
+                cancelButtonText: 'Batal',
+                borderRadius: '24px',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('logoutForm').submit();
+                }
+            })
+        }
 
-            // =========================
-            // LINE CHART (Mingguan)
-            // =========================
-            const lineCtx = document.getElementById('lineChart');
-            if (lineCtx) {
-                new Chart(lineCtx, {
-                    type: 'line',
-                    data: {
-                        labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'],
-                        datasets: [
-                            {
-                                label: 'Hadir',
-                                data: [120, 132, 128, 140, 150],
-                                borderColor: '#0d6efd',
-                                backgroundColor: 'rgba(13,110,253,0.12)',
-                                tension: 0.4,
-                                fill: true,
-                                pointBackgroundColor: '#0b5ed7',
-                                pointBorderColor: '#ffffff',
-                                pointRadius: 5
-                            },
-                            {
-                                label: 'Tidak Hadir',
-                                data: [10, 8, 12, 6, 5],
-                                borderColor: '#e64980',
-                                backgroundColor: 'rgba(230,73,128,0.12)',
-                                tension: 0.4,
-                                fill: true,
-                                pointBackgroundColor: '#d6336c',
-                                pointBorderColor: '#ffffff',
-                                pointRadius: 5
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                labels: {
-                                    color: '#34495e',
-                                    font: { weight: '600' }
-                                }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                grid: { color: 'rgba(13,110,253,0.08)' },
-                                ticks: { color: '#6c757d' }
-                            },
-                            x: {
-                                grid: { display: false },
-                                ticks: { color: '#6c757d' }
-                            }
-                        }
-                    }
-                });
-            }
-
-            // =========================
-            // DOUGHNUT CHART (Hari Ini)
-            // =========================
-            const pieCtx = document.getElementById('pieChart');
-            if (pieCtx) {
-                new Chart(pieCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Hadir', 'Izin', 'Sakit', 'Alpa'],
-                        datasets: [{
-                            data: [150, 12, 8, 5],
-                            backgroundColor: ['#0d6efd', '#20c997', '#fd7e14', '#6f42c1'],
-                            hoverOffset: 8,
-                            borderWidth: 0
-                        }]
-                    },
-                    options: {
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: {
-                                    color: '#34495e',
-                                    padding: 18,
-                                    font: { weight: '600' }
-                                }
-                            }
-                        },
-                        cutout: '65%',
-                        responsive: true
-                    }
-                });
-            }
-
-        });
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+          return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
     </script>
+    @stack('scripts')
 </body>
-
 </html>

@@ -14,4 +14,14 @@ class RombonganBelajar extends Model
         'tingkat',
         'api_rombel_id'
     ];
+
+    public function absensi()
+    {
+        return $this->hasMany(Absensi::class);
+    }
+
+    public function anggotaKelas()
+    {
+        return $this->hasMany(AnggotaKelas::class);
+    }
 }

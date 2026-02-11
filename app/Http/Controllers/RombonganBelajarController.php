@@ -76,7 +76,7 @@ class RombonganBelajarController extends Controller
                 return back()->with('error', 'API_ROMBEL_URL belum diset di file .env');
             }
 
-            $response = Http::timeout(20)->get($url);
+            $response = Http::timeout(60)->get($url);
 
             if ($response->failed()) {
                 return back()->with('error', 'API error dengan status: ' . $response->status());

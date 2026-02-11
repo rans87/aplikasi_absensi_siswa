@@ -3,17 +3,21 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class Guru extends Model
+class Guru extends Authenticatable
 {
     use HasFactory;
 
     protected $table = 'guru';
+    protected $fillable = ['nama', 'email', 'password', 'nip', 'jenis_kelamin', 'no_hp', 'alamat', 'foto'];
+    protected $hidden = ['password', 'remember_token'];
 
-    protected $fillable = [
-        'nip',
-        'nama',
-        'no_hp'
-    ];
+
+    protected function casts(): array
+    {
+        return [
+            'password' => 'hashed',
+        ];
+    }
 }

@@ -1,0 +1,13 @@
+
+  GET|HEAD        siswa si???
+  POST            siswa si???
+  GET|HEAD        siswa-sync-api siswa.sync ??? SiswaController@???
+  GET|HEAD        siswa/create siswa.create ??? SiswaController@c???
+  GET|HEAD        siswa/dashboard siswa.dashboard ??? DashboardControll???
+  GET|HEAD        siswa/{siswa} siswa.show ??? SiswaControlle???
+  PUT|PATCH       siswa/{siswa} siswa.update ??? SiswaController@???
+  DELETE          siswa/{siswa} siswa.destroy ??? SiswaController@d???
+  GET|HEAD        siswa/{siswa}/edit siswa.edit ??? SiswaCont???
+
+         Showing [9] routes
+

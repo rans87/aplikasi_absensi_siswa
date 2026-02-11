@@ -1,15 +1,25 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\Hash;
 use App\Models\Guru;
 use Illuminate\Http\Request;
 
 class GuruController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $guru = Guru::latest()->get();
+        $search = $request->search;
+
+        $guru = Guru::when($search, function ($query) use ($search) {
+            $query->where('nama', 'like', "%{$search}%")
+                ->orWhere('nip', 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%");
+        })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
         return view('guru.index', compact('guru'));
     }
 
@@ -22,13 +32,21 @@ class GuruController extends Controller
     {
         $request->validate([
             'nama' => 'required|string|max:255',
-            'nip' => 'nullable|string|max:50',
+            'nip' => 'nullable|string|max:50|unique:guru,nip',
             'no_hp' => 'nullable|string|max:20',
+            'email' => 'required|email|unique:guru,email',
+            'password' => 'required|min:6'
         ]);
 
-        Guru::create($request->all());
+        Guru::create([
+            'nama' => $request->nama,
+            'nip' => $request->nip,
+            'no_hp' => $request->no_hp,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
 
-        return redirect()->route('guru.index')->with('success', 'Data guru berhasil ditambahkan');
+        return redirect()->route('guru.index')->with('success', 'Guru berhasil ditambahkan!');
     }
 
     public function edit(Guru $guru)
@@ -38,20 +56,31 @@ class GuruController extends Controller
 
     public function update(Request $request, Guru $guru)
     {
-        $request->validate([
+        $validated = $request->validate([
             'nama' => 'required|string|max:255',
-            'nip' => 'nullable|string|max:50',
+            'nip' => 'nullable|string|max:50|unique:guru,nip,' . $guru->id,
             'no_hp' => 'nullable|string|max:20',
+            'email' => 'required|email|unique:guru,email,' . $guru->id,
         ]);
 
-        $guru->update($request->all());
+        if ($request->filled('password')) {
+            $request->validate(['password' => 'min:6']);
+            $validated['password'] = Hash::make($request->password);
+        }
 
-        return redirect()->route('guru.index')->with('success', 'Data guru berhasil diperbarui');
+        $guru->update($validated);
+
+        return redirect()->route('guru.index')->with('success', 'Data guru berhasil diperbarui!');
     }
 
     public function destroy(Guru $guru)
     {
         $guru->delete();
-        return redirect()->route('guru.index')->with('success', 'Data guru berhasil dihapus');
+        return redirect()->route('guru.index')->with('success', 'Data guru berhasil dihapus!');
+    }
+
+    public function show($id)
+    {
+        abort(404);
     }
 }

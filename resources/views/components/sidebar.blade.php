@@ -1,128 +1,130 @@
-<aside class="app-sidebar shadow-sm sidebar-modern">
-    
-    <div class="sidebar-brand d-flex align-items-center gap-2 px-3 py-3 border-bottom border-light border-opacity-25">
-        <img src="{{ asset('assets/img/logo.png') }}" class="brand-image shadow-sm rounded-3" style="width:38px">
-        <span class="brand-text fw-bold text-white fs-5">PresenceX</span>
+<aside class="app-sidebar shadow-lg border-0">
+    <div class="sidebar-brand d-flex align-items-center gap-3 px-4 py-5">
+        <div class="brand-identity position-relative">
+            <div class="bg-white rounded-4 d-flex align-items-center justify-content-center shadow-glow-white overflow-hidden" style="width:50px; height:50px;">
+                <i class="bi bi-qr-code text-primary fs-3"></i>
+            </div>
+            <div class="active-dot"></div>
+        </div>
+        <div class="ms-1">
+            <span class="brand-text fw-extrabold text-white fs-3 d-block lh-1 ls-tight">Presence<span class="text-secondary-blue">X</span></span>
+            <small class="text-white-50 fw-bold mt-2 d-block ls-2" style="font-size: 8px;">DIGITAL ECOSYSTEM</small>
+        </div>
     </div>
 
-    <div class="sidebar-wrapper">
-        <nav class="mt-3">
-            <ul class="nav sidebar-menu flex-column px-2">
+    <div class="sidebar-wrapper px-3 scrollbar-custom">
+        <nav class="mt-4">
+            <ul class="nav flex-column gap-2" data-lte-toggle="treeview" role="menu" data-accordion="false">
 
-                <li class="nav-item mb-1">
+                <li class="nav-item">
                     <a href="{{ route('dashboard') }}"
-                       class="nav-link sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                        <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                       class="nav-link {{ request()->routeIs('*dashboard') ? 'active' : '' }}">
+                        <i class="bi bi-grid-1x2-fill"></i>
+                        <span>Dashboard Utama</span>
                     </a>
                 </li>
 
-                <li class="nav-item mb-1">
-                    <a href="{{ route('guru.index') }}"
-                       class="nav-link sidebar-link {{ request()->routeIs('guru.*') ? 'active' : '' }}">
-                        <i class="bi bi-person-badge-fill me-2"></i> Guru
+                {{-- ADMIN ONLY --}}
+                @if(Auth::guard('web')->check())
+                <li class="nav-header text-white-50 small fw-bold mt-4 mb-2 px-4 ls-2" style="font-size: 10px;">CORE ENGINE</li>
+                
+                <li class="nav-item">
+                    <a href="{{ route('guru.index') }}" class="nav-link {{ request()->routeIs('guru.*') ? 'active' : '' }}">
+                        <i class="bi bi-person-badge-fill"></i> <span>Data Guru</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('siswa.index') }}" class="nav-link {{ request()->routeIs('siswa.*') ? 'active' : '' }}">
+                        <i class="bi bi-mortarboard-fill"></i> <span>Data Siswa</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('rombongan-belajar.index') }}" class="nav-link {{ request()->routeIs('rombongan-belajar.*') ? 'active' : '' }}">
+                        <i class="bi bi-layers-fill"></i> <span>Data Kelas</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('anggota-kelas.index') }}" class="nav-link {{ request()->routeIs('anggota-kelas.*') ? 'active' : '' }}">
+                        <i class="bi bi-person-check-fill"></i> <span>Penempatan Siswa</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('tahun_ajar.index') }}" class="nav-link {{ request()->routeIs('tahun_ajar.*') ? 'active' : '' }}">
+                        <i class="bi bi-calendar3-range-fill"></i> <span>Tahun Ajaran</span>
+                    </a>
+                </li>
+                
+                <li class="nav-header text-white-50 small fw-bold mt-4 mb-2 px-4 ls-2" style="font-size: 10px;">ANALYTICS & CONDUCT</li>
+                <li class="nav-item">
+                    <a href="{{ route('pelanggaran.index') }}" class="nav-link {{ request()->routeIs('pelanggaran.*') ? 'active' : '' }}">
+                        <i class="bi bi-patch-exclamation-fill text-rose-soft"></i> <span>Pelanggaran</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('prestasi.index') }}" class="nav-link {{ request()->routeIs('prestasi.*') ? 'active' : '' }}">
+                        <i class="bi bi-award-fill text-amber"></i> <span>Prestasi Siswa</span>
                     </a>
                 </li>
 
-                <li class="nav-item mb-1">
-                    <a href="{{ route('pengguna.index') }}"
-                       class="nav-link sidebar-link {{ request()->routeIs('pengguna.*') ? 'active' : '' }}">
-                        <i class="bi bi-people-fill me-2"></i> Pengguna
+                <li class="nav-header text-white-50 small fw-bold mt-4 mb-2 px-4 ls-2" style="font-size: 10px;">SECURITY CENTER</li>
+                <li class="nav-item">
+                    <a href="{{ route('pengguna.index') }}" class="nav-link {{ request()->routeIs('pengguna.*') ? 'active' : '' }}">
+                        <i class="bi bi-shield-lock-fill"></i> <span>Akses Admin</span>
                     </a>
                 </li>
+                @endif
 
-                <li class="nav-item mb-1">
-                    <a href="{{ route('siswa.index') }}"
-                       class="nav-link sidebar-link {{ request()->routeIs('siswa.*') ? 'active' : '' }}">
-                        <i class="bi bi-mortarboard-fill me-2"></i> Siswa
+                {{-- GURU ONLY --}}
+                @if(Auth::guard('guru')->check())
+                <li class="nav-header text-white-50 small fw-bold mt-4 mb-2 px-4 ls-2" style="font-size: 10px;">GURU OPERATIONS</li>
+                <li class="nav-item">
+                    <a href="{{ route('absensi.scan') }}" class="nav-link {{ request()->routeIs('absensi.scan') ? 'active' : '' }}">
+                        <i class="bi bi-qr-code-scan"></i> <span>Pindai Absensi</span>
                     </a>
                 </li>
-
-                <li class="nav-item mb-1">
-                    <a href="{{ route('rombongan-belajar.index') }}"
-                       class="nav-link sidebar-link {{ request()->routeIs('rombongan-belajar.*') ? 'active' : '' }}">
-                        <i class="bi bi-diagram-3-fill me-2"></i> Rombel
+                <li class="nav-item">
+                    <a href="{{ route('pelanggaran.index') }}" class="nav-link {{ request()->routeIs('pelanggaran.*') ? 'active' : '' }}">
+                        <i class="bi bi-patch-exclamation-fill text-rose-soft"></i> <span>Pelanggaran Siswa</span>
                     </a>
                 </li>
-
-                <li class="nav-item mb-1">
-                    <a href="{{ route('absensi.index') }}"
-                       class="nav-link sidebar-link {{ request()->routeIs('absensi.*') ? 'active' : '' }}">
-                        <i class="bi bi-clipboard-check-fill me-2"></i> Absensi
+                <li class="nav-item">
+                    <a href="{{ route('prestasi.index') }}" class="nav-link {{ request()->routeIs('prestasi.*') ? 'active' : '' }}">
+                        <i class="bi bi-award-fill text-amber"></i> <span>Prestasi Siswa</span>
                     </a>
                 </li>
+                @endif
 
+                {{-- SISWA ONLY --}}
+                @if(Auth::guard('siswa')->check())
+                <li class="nav-header text-white-50 small fw-bold mt-4 mb-2 px-4 ls-2" style="font-size: 10px;">STUDENT HUB</li>
+                <li class="nav-item">
+                    <a href="{{ route('siswa.dashboard') }}" class="nav-link {{ request()->routeIs('siswa.dashboard') ? 'active' : '' }}">
+                        <i class="bi bi-person-bounding-box"></i> <span>E-Kartu & QR</span>
+                    </a>
+                </li>
+                @endif
+
+                <div class="sidebar-footer-spacer py-5"></div>
             </ul>
         </nav>
     </div>
 </aside>
 
 <style>
-    .nav-link.hover-light:hover {
-    background-color: rgba(255,255,255,0.15);
-    transition: 0.2s ease-in-out;
-    }
+    .ls-tight { letter-spacing: -1px; }
+    .ls-2 { letter-spacing: 2px; }
+    .text-secondary-blue { color: var(--secondary-blue); }
+    .shadow-glow-white { box-shadow: 0 0 20px rgba(255, 255, 255, 0.1); }
+    
+    .brand-identity { position: relative; }
+    .active-dot { position: absolute; bottom: 0; right: 0; width: 12px; height: 12px; background: var(--emerald); border-radius: 50%; border: 3px solid var(--deep-blue); }
 
-    .app-sidebar .nav-link {
-        font-size: 15px;
-        letter-spacing: 0.3px;
-    }
-
-    .app-sidebar .nav-link i {
-        font-size: 18px;
-    }
-
-    .app-sidebar .nav-link.active,
-    .app-sidebar .nav-link.bg-white {
-        transition: 0.2s;
-    }
-
-    /* Background utama sidebar */
-    .sidebar-modern {
-        background: linear-gradient(180deg, #2c1cbaea, #6a3cc0);
-    }
-
-    /* Memaksa SEMUA link di sidebar (sebelum/sesudah klik) berwarna putih */
-    .app-sidebar .nav-link.sidebar-link {
-        color: #ffffff !important; /* Putih solid */
-        opacity: 1 !important;    /* Menghilangkan efek pudar jika ada */
-        font-size: 15px;
-        letter-spacing: 0.3px;
-        border-radius: 12px;
-        padding: 10px 14px;
-        font-weight: 500;
-        transition: all 0.2s ease-in-out;
-        position: relative;
-    }
-
-    /* Memaksa Ikon tetap putih */
-    .app-sidebar .nav-link.sidebar-link i {
-        color: #ffffff !important;
-        font-size: 18px;
-    }
-
-    /* Efek Hover (Saat kursor di atasnya) */
-    .sidebar-link:hover {
-        background-color: rgba(255, 255, 255, 0.15); /* Background agak terang dikit saat didekati */
-        color: #ffffff !important;
-    }
-
-    /* Kondisi ACTIVE (Setelah diklik/Halaman yang sedang dibuka) */
-    .sidebar-link.active {
-        background-color: rgba(255, 255, 255, 0.25); /* Tetap pakai transparan agar tulisan putih tidak tenggelam */
-        font-weight: 600;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    /* Garis aksen kiri saat aktif */
-    .sidebar-link.active::before {
-        content: "";
-        position: absolute;
-        left: 0;
-        top: 8px;
-        bottom: 8px;
-        width: 4px;
-        border-radius: 0 6px 6px 0;
-        background-color: #ffffff;
-    }
-
+    .scrollbar-custom::-webkit-scrollbar { width: 5px; }
+    .scrollbar-custom::-webkit-scrollbar-track { background: transparent; }
+    .scrollbar-custom::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 10px; }
+    .scrollbar-custom::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.1); }
+    
+    .nav-header { opacity: 0.4; }
+    .text-rose-soft { color: #fb7185; }
+    .text-amber { color: #fbbf24; }
 </style>

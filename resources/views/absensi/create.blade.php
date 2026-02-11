@@ -39,7 +39,9 @@
                             <select name="rombongan_belajar_id" class="form-select shadow-sm" required>
                                 <option value="">-- Pilih Rombel --</option>
                                 @foreach($rombongan as $r)
-                                    <option value="{{ $r->id }}">{{ $r->nama }}</option>
+                                    <option value="{{ $r->id }}">
+                                        {{ $r->nama_kelas }} - {{ $r->jurusan }} (Tingkat {{ $r->tingkat }})
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
