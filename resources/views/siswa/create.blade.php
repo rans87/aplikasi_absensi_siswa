@@ -29,7 +29,7 @@
 
                     <div class="mb-4">
                         <label class="form-label fw-semibold">Jenis Kelamin</label>
-                        <select name="jenis_kelamin" class="form-select shadow-sm" required>
+                        <select name="jenis_kelamin" class="form-select select2 shadow-sm" required>
                             <option value="">-- Pilih --</option>
                             <option value="L">Laki-laki</option>
                             <option value="P">Perempuan</option>

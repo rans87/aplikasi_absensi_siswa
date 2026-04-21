@@ -17,6 +17,31 @@
 
         {{-- RIGHT SIDE --}}
         <ul class="navbar-nav ms-auto align-items-center gap-3">
+            {{-- NOTIFICATION BELL (GURU ONLY) --}}
+            @if(Auth::guard('guru')->check())
+            <li class="nav-item dropdown me-2">
+                <a class="nav-link position-relative text-dark p-2 rounded-4 hover-bg-light transition-all" href="#" role="button" data-bs-toggle="dropdown" id="notification-bell">
+                    <i class="bi bi-bell fs-4" id="bell-icon"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none shadow-sm" id="notification-badge" style="margin-left: -5px; margin-top: 5px; font-size: 10px;">
+                        0
+                    </span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-end border-0 shadow-lg mt-4 p-0 dropdown-custom overflow-hidden" style="border-radius:28px; width:350px;">
+                    <div class="p-4 bg-primary text-white d-flex align-items-center justify-content-between">
+                        <h6 class="mb-0 fw-bold">Notifikasi Mengajar</h6>
+                        <button onclick="markAllAsRead()" class="btn btn-sm btn-link text-white text-decoration-none p-0 opacity-75 hover-opacity-100" style="font-size: 11px;">Baca Semua</button>
+                    </div>
+                    <div class="scrollbar-custom" style="max-height: 400px; overflow-y: auto;" id="notification-list">
+                        {{-- Notifications will be injected here via JS --}}
+                        <div class="p-5 text-center text-muted" id="no-notifications">
+                            <i class="bi bi-bell-slash display-6 d-block mb-3 opacity-25"></i>
+                            <p class="small fw-bold mb-0">Belum ada notifikasi baru</p>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            @endif
+
             {{-- Time Display (Subtle) --}}
             <li class="nav-item d-none d-lg-block me-3">
                 <div class="glass-btn px-4 py-2 rounded-pill d-flex align-items-center shadow-sm border border-light">
@@ -117,7 +142,28 @@
     .avatar-gradient { width: 100%; height: 100%; background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue)); }
     .shadow-glow { box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); }
 
-    .dropdown-custom { transform-origin: top right; }
+    .dropdown-custom { 
+        transform-origin: top right; 
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    @media (max-width: 576px) {
+        .dropdown-custom {
+            width: 92vw !important;
+            min-width: unset !important;
+            margin-right: 4vw !important;
+            border-radius: 24px !important;
+        }
+        .profile-avatar-large {
+            width: 70px !important;
+            height: 70px !important;
+            border-radius: 20px !important;
+        }
+        .profile-dropdown-header {
+            padding: 1.5rem !important;
+        }
+    }
+
     .profile-dropdown-header { background: linear-gradient(to bottom, #f8fafc, #ffffff); border: 1px solid var(--border-color); }
     .profile-avatar-large { width: 90px; height: 90px; border-radius: 28px; overflow: hidden; }
     .badge-premium { background: var(--soft-blue); color: var(--primary-blue); border-radius: 12px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
@@ -132,11 +178,94 @@
 
 @push('scripts')
 <script>
+    // Real-time clock
     setInterval(() => {
         const now = new Date();
         const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
         const el = document.getElementById('real-time-display');
         if(el) el.innerText = timeStr;
     }, 30000);
+
+    @if(Auth::guard('guru')->check())
+    // Notification polling
+    function fetchNotifications() {
+        fetch('{{ route("notifikasi-guru.get") }}', {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            const badge = document.getElementById('notification-badge');
+            const icon = document.getElementById('bell-icon');
+            const list = document.getElementById('notification-list');
+            const noNotif = document.getElementById('no-notifications');
+
+            if (data.length > 0) {
+                badge.textContent = data.length;
+                badge.classList.remove('d-none');
+                icon.className = 'bi bi-bell-fill fs-4 text-primary';
+                noNotif.classList.add('d-none');
+
+                let html = '';
+                data.forEach(n => {
+                    const tipeIcon = n.tipe === 'mengajar' ? 'bi-book-fill text-primary' :
+                                     n.tipe === 'selesai' ? 'bi-check-circle-fill text-success' :
+                                     'bi-info-circle-fill text-info';
+                    const tipeColor = n.tipe === 'mengajar' ? '#eff6ff' :
+                                      n.tipe === 'selesai' ? '#ecfdf5' : '#f0f9ff';
+                    html += `
+                        <div class="p-3 border-bottom notif-item" style="cursor:pointer; transition: all 0.2s; background: ${!n.dibaca ? tipeColor : '#fff'}" onclick="markAsRead(${n.id})">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="p-2 rounded-3" style="background: ${tipeColor}">
+                                    <i class="bi ${tipeIcon} fs-5"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold text-dark small">${n.judul}</div>
+                                    <div class="text-muted small mt-1" style="line-height: 1.4;">${n.pesan}</div>
+                                    <div class="text-muted mt-2" style="font-size: 10px; font-weight: 700;">
+                                        <i class="bi bi-clock me-1"></i>${timeAgo(n.created_at)}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+                list.innerHTML = html;
+            } else {
+                badge.classList.add('d-none');
+                icon.className = 'bi bi-bell fs-4';
+                noNotif.classList.remove('d-none');
+                list.innerHTML = '';
+                list.appendChild(noNotif);
+            }
+        }).catch(() => {});
+    }
+
+    function markAsRead(id) {
+        fetch('/notifikasi-guru/' + id + '/baca', {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
+        }).then(() => fetchNotifications());
+    }
+
+    function markAllAsRead() {
+        fetch('{{ route("notifikasi-guru.baca-semua") }}', {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
+        }).then(() => fetchNotifications());
+    }
+
+    function timeAgo(dateStr) {
+        const now = new Date();
+        const d = new Date(dateStr);
+        const diff = Math.floor((now - d) / 1000);
+        if (diff < 60) return 'Baru saja';
+        if (diff < 3600) return Math.floor(diff / 60) + ' menit lalu';
+        if (diff < 86400) return Math.floor(diff / 3600) + ' jam lalu';
+        return Math.floor(diff / 86400) + ' hari lalu';
+    }
+
+    // Initial fetch + poll every 30s
+    fetchNotifications();
+    setInterval(fetchNotifications, 30000);
+    @endif
 </script>
 @endpush

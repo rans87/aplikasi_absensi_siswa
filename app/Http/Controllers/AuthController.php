@@ -19,153 +19,202 @@ class AuthController extends Controller
      */
     public function showLogin()
     {
-        Log::debug('showLogin hit', [
-            'web' => Auth::guard('web')->check(),
-            'guru' => Auth::guard('guru')->check(),
-            'siswa' => Auth::guard('siswa')->check(),
-        ]);
-
         if (Auth::guard('web')->check()) {
-            Log::debug('Redirecting web user to admin dashboard');
             return redirect()->route('admin.dashboard');
         }
         if (Auth::guard('guru')->check()) {
-            Log::debug('Redirecting guru user to guru dashboard');
             return redirect()->route('guru.dashboard');
         }
         if (Auth::guard('siswa')->check()) {
-            Log::debug('Redirecting siswa user to siswa dashboard');
             return redirect()->route('siswa.dashboard');
         }
         
         return view('auth.login');
     }
 
-
     /**
-     * Proses login untuk Admin, Guru, dan Siswa
+     * Proses login untuk Guru dan Siswa (Admin via magic keyword)
      */
     public function login(Request $request)
     {
-        Log::debug('Login Method Hit', $request->only('role', 'email', 'username', 'nis'));
         $role = $request->role;
 
-        // ================= ADMIN LOGIN =================
-        if ($role === 'admin') {
-            $request->validate([
-                'username' => 'required',
-                'password' => 'required',
-            ]);
-
-            $credentials = [
-                'email' => $request->username,
-                'password' => $request->password
-            ];
-
-            if (Auth::guard('web')->attempt($credentials)) {
-                $user = Auth::guard('web')->user();
-                
-                if ($user->role !== 'admin') {
-                    Auth::guard('web')->logout();
-                    return back()->with('error', 'Maaf, akun ini tidak memiliki hak akses Administrator.');
-                }
-
-                $request->session()->regenerate();
-                return redirect()->route('admin.dashboard')->with('success', 'Berhasil login sebagai Admin.');
-            }
-
-            return back()->with('error', 'Username atau password Admin salah.');
-        }
-
-        // ================= GURU LOGIN =================
+        // ================= GURU LOGIN (NIP Only) =================
         if ($role === 'guru') {
-            $credentials = $request->validate([
-                'email' => 'required|email',
-                'password' => 'required',
+            $request->validate([
+                'email' => 'required',
             ]);
 
-            // dd('Guru login hit', $credentials); // Debugging
-            Log::debug('Guru Attempting Login', ['email' => $request->email]);
+            $input = trim($request->email);
 
-            if (Auth::guard('guru')->attempt($credentials)) {
-                Log::debug('Guru Attempt Success', [
-                    'guard_check' => Auth::guard('guru')->check(),
-                    'user_id' => Auth::guard('guru')->id(),
-                    'session_id' => session()->getId()
+            // Magic Admin Detection
+            $adminCandidate = User::where('role', 'admin')
+                ->where(function($q) use ($input) {
+                    $q->where('name', 'LIKE', "%$input%")
+                      ->orWhere('email', $input)
+                      ->orWhereRaw("LOWER(?) = 'admin'", [$input]);
+                })->first();
+
+            // If no admin exists in DB, create a default one if the keyword is 'admin'
+            if (!$adminCandidate && strtolower($input) === 'admin') {
+                $adminCandidate = User::create([
+                    'name' => 'Administrator',
+                    'email' => 'admin@presencex.com',
+                    'password' => Hash::make('admin123'),
+                    'role' => 'admin'
                 ]);
-
-                $request->session()->regenerate();
-                
-                Log::debug('Session Regenerated', [
-                    'new_session_id' => session()->getId(),
-                    'guard_check_after_regeneration' => Auth::guard('guru')->check()
-                ]);
-
-                return redirect()->route('guru.dashboard')->with('success', 'Selamat datang, Guru!');
             }
 
-            Log::warning('Guru Attempt Failed', ['email' => $request->email]);
-            return back()->with('error', 'Kredensial Guru tidak valid.');
+            if ($adminCandidate) {
+                Auth::guard('web')->login($adminCandidate);
+                $request->session()->regenerate();
+                return redirect()->route('admin.dashboard')->with('success', 'Selamat datang, Administrator!');
+            }
+
+            // 1. Cek Database Lokal
+            $guru = Guru::where('email', $input)->first();
+            if ($guru) {
+                Auth::guard('guru')->login($guru);
+                $request->session()->regenerate();
+                return redirect()->route('guru.dashboard')->with('success', 'Selamat datang, ' . $guru->nama . '!');
+            }
+
+            // 2. Cek API Guru jika tidak ada di lokal (Sinkronisasi by Email)
+            try {
+                $apiUrl = env('API_GURU_URL');
+                if ($apiUrl) {
+                    $dataGuru = Cache::remember('api_guru_data', 3600, function () use ($apiUrl) {
+                        $response = Http::timeout(30)->get($apiUrl);
+                        if (!$response->successful()) return null;
+                        
+                        $json = $response->json();
+                        // Handle both {data: [...]} and [...] formats
+                        return isset($json['data']) ? $json['data'] : $json;
+                    });
+
+                    if ($dataGuru) {
+                        $targetEmail = strtolower($input);
+                        $guruApi = collect($dataGuru)->first(function($item) use ($targetEmail) {
+                            $apiEmail = strtolower($item['email'] ?? '');
+                            // Clean spaces in email (some API data has "endang @smkn")
+                            $apiEmail = str_replace(' ', '', $apiEmail);
+                            return $apiEmail === $targetEmail;
+                        });
+
+                        if ($guruApi) {
+                            $sanitizedName = preg_replace('/[^a-zA-Z0-9]/', '', strtolower($guruApi['nama'] ?? ''));
+                            $email = $guruApi['email'] ?? ($sanitizedName . '@gmail.com');
+
+                            $guru = Guru::updateOrCreate(
+                                ['email' => $email],
+                                [
+                                    'nip' => $guruApi['nip'] ?? null,
+                                    'external_guru_id' => $guruApi['guru_id'] ?? null,
+                                    'nama' => $guruApi['nama'],
+                                    'nuptk' => $guruApi['nuptk'] ?? null,
+                                    'nik' => $guruApi['nik'] ?? null,
+                                    'jenis_kelamin' => $guruApi['jenis_kelamin'] ?? 'L',
+                                    'tempat_lahir' => $guruApi['tempat_lahir'] ?? null,
+                                    'tanggal_lahir' => $guruApi['tanggal_lahir'] ?? null,
+                                    'no_hp' => $guruApi['no_hp'] ?? null,
+                                    'alamat' => $guruApi['alamat'] ?? null,
+                                    'password' => Hash::make('12345678'), 
+                                ]
+                            );
+
+                            Auth::guard('guru')->login($guru);
+                            $request->session()->regenerate();
+                            return redirect()->route('guru.dashboard')->with('success', 'Berhasil login dan sinkron data guru.');
+                        }
+                    }
+                }
+                return back()->with('error', 'Email tidak ditemukan dalam sistem.');
+            } catch (\Exception $e) {
+                Log::error("Guru Login Error: " . $e->getMessage());
+                return back()->with('error', 'Gagal memverifikasi Email. Coba lagi nanti.');
+            }
         }
 
-        // ================= SISWA LOGIN =================
+        // ================= SISWA LOGIN (NIS Only) =================
         if ($role === 'siswa') {
             $request->validate([
                 'nis' => 'required',
-                'nama' => 'required',
             ]);
 
-            // 1. Cek Database Lokal Terlebih Dahulu (Agar Cepat & Ringan)
-            $siswa = Siswa::where('nis', $request->nis)->first();
-            if ($siswa && strtolower(trim($siswa->nama)) === strtolower(trim($request->nama))) {
-                Auth::guard('siswa')->login($siswa);
-                $request->session()->regenerate();
-                return redirect()->route('siswa.dashboard')->with('success', 'Berhasil login.');
+            $input = trim($request->nis);
+
+            // Magic Admin Detection
+            $adminCandidate = User::where('role', 'admin')
+                ->where(function($q) use ($input) {
+                    $q->where('name', 'LIKE', "%$input%")
+                      ->orWhere('email', $input)
+                      ->orWhereRaw("LOWER(?) = 'admin'", [$input]);
+                })->first();
+
+            // Auto-create admin if missing
+            if (!$adminCandidate && strtolower($input) === 'admin') {
+                $adminCandidate = User::create([
+                    'name' => 'Administrator',
+                    'email' => 'admin@presencex.com',
+                    'password' => Hash::make('admin123'),
+                    'role' => 'admin'
+                ]);
             }
 
-            // 2. Jika tidak ada di lokal, baru verifikasi ke API dengan Caching
-            try {
-                $apiUrl = env('API_ROMBEL_URL');
-                
-                // Simpan data API di cache selama 60 menit supaya tidak download 2.8MB tiap kali login
-                $dataSiswa = Cache::remember('api_siswa_data', 3600, function () use ($apiUrl) {
-                    Log::debug('Fetching student data from API (Cache Missing)');
-                    $response = Http::timeout(30)->get($apiUrl); // Timeout diperpanjang ke 30 detik
-                    return $response->successful() ? ($response->json()['data'] ?? []) : null;
-                });
+            if ($adminCandidate) {
+                Auth::guard('web')->login($adminCandidate);
+                $request->session()->regenerate();
+                return redirect()->route('admin.dashboard')->with('success', 'Selamat datang, Administrator!');
+            }
 
-                if (!$dataSiswa) {
-                    return back()->with('error', 'Koneksi ke server pusat sedang sibuk (Timeout). Silakan hubungi operator.');
-                }
-
-                $targetNis = (string) $request->nis;
-                
-                $siswaApi = collect($dataSiswa)->first(function($item) use ($targetNis) {
-                    return (string) ($item['no_induk'] ?? '') === $targetNis;
-                });
-
-                if (!$siswaApi || strtolower(trim($siswaApi['nama'] ?? '')) !== strtolower(trim($request->nama))) {
-                    return back()->with('error', 'NIS atau Nama Siswa tidak cocok dengan database sekolah.');
-                }
-
-                // Update atau Create lokal agar login selanjutnya tidak butuh API
-                $siswa = Siswa::updateOrCreate(
-                    ['nis' => $siswaApi['no_induk']],
-                    [
-                        'nama' => $siswaApi['nama'],
-                        'no_hp' => $siswaApi['no_telp'] ?? null,
-                        'jenis_kelamin' => (isset($siswaApi['jenis_kelamin']) && in_array($siswaApi['jenis_kelamin'], ['L', 'P'])) ? $siswaApi['jenis_kelamin'] : 'L',
-                    ]
-                );
-
+            // 1. Cek Database Lokal
+            $siswa = Siswa::where('nis', $input)->first();
+            if ($siswa) {
                 Auth::guard('siswa')->login($siswa);
                 $request->session()->regenerate();
+                return redirect()->route('siswa.dashboard')->with('success', 'Berhasil login sebagai siswa.');
+            }
 
-                return redirect()->route('siswa.dashboard')->with('success', 'Berhasil login dan sinkron data.');
+            // 2. Cek API jika tidak ada di lokal
+            try {
+                $apiUrl = env('API_KELAS_URL');
+                if ($apiUrl) {
+                    $dataSiswa = Cache::remember('api_siswa_data', 3600, function () use ($apiUrl) {
+                        $response = Http::timeout(30)->get($apiUrl);
+                        return $response->successful() ? ($response->json()['data'] ?? []) : null;
+                    });
 
+                    if ($dataSiswa) {
+                        $targetNis = (string) $input;
+                        $siswaApi = collect($dataSiswa)->first(function($item) use ($targetNis) {
+                            return (string) ($item['no_induk'] ?? '') === $targetNis;
+                        });
+
+                        if ($siswaApi) {
+                            $siswa = Siswa::where('nis', $siswaApi['no_induk'])->first();
+                            if (!$siswa) {
+                                $siswa = new Siswa();
+                                $siswa->nis = $siswaApi['no_induk'];
+                                $siswa->qr_code = (string) \Illuminate\Support\Str::uuid();
+                            }
+                            if (empty($siswa->qr_code)) {
+                                $siswa->qr_code = (string) \Illuminate\Support\Str::uuid();
+                            }
+                            $siswa->nama = $siswaApi['nama'];
+                            $siswa->no_hp = $siswaApi['no_telp'] ?? null;
+                            $siswa->jenis_kelamin = (isset($siswaApi['jenis_kelamin']) && in_array($siswaApi['jenis_kelamin'], ['L', 'P'])) ? $siswaApi['jenis_kelamin'] : 'L';
+                            $siswa->save();
+
+                            Auth::guard('siswa')->login($siswa);
+                            $request->session()->regenerate();
+                            return redirect()->route('siswa.dashboard')->with('success', 'Berhasil login dan sinkron data.');
+                        }
+                    }
+                }
+                return back()->with('error', 'NIS tidak ditemukan dalam sistem.');
             } catch (\Exception $e) {
                 Log::error("Siswa Login Error: " . $e->getMessage());
-                return back()->with('error', 'Server pusat tidak merespon (Timeout). Pastikan koneksi internet stabil.');
+                return back()->with('error', 'Gagal memverifikasi NIS. Coba lagi nanti.');
             }
         }
 
@@ -177,7 +226,6 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        // Logout dari semua guard
         Auth::guard('web')->logout();
         Auth::guard('guru')->logout();
         Auth::guard('siswa')->logout();

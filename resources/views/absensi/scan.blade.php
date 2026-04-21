@@ -1,296 +1,417 @@
 @extends('layouts.app')
 
-@section('title', 'Scan QR Presensi')
+@section('title', 'Smart Scanner Presensi')
 
 @push('styles')
 <style>
     :root {
-        --primary-blue: #2563eb;
-        --secondary-blue: #3b82f6;
-        --soft-blue: #f1f5ff;
-        --deep-blue: #1e3a8a;
+        --primary: #4f46e5;
+        --primary-glow: rgba(79, 70, 229, 0.4);
+        --accent: #0ea5e9;
+        --glass: rgba(255, 255, 255, 0.85);
+        --dark-glass: rgba(15, 23, 42, 0.9);
     }
 
-    .scanner-page {
-        background-color: #f8fafc;
-        min-height: calc(100vh - 100px);
-        padding: 40px 0;
-    }
-
-    .scan-card {
-        max-width: 500px;
-        margin: 0 auto;
-        border-radius: 35px;
-        background: #ffffff;
-        box-shadow: 0 40px 100px -20px rgba(37, 99, 235, 0.15);
-        border: 1px solid rgba(37, 99, 235, 0.05);
-        overflow: hidden;
-        position: relative;
-    }
-
-    .scan-header {
-        padding: 45px 30px 25px;
-        text-align: center;
-        background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.03), transparent);
-    }
-
-    .pulse-avatar {
-        width: 80px;
-        height: 80px;
-        background: var(--soft-blue);
-        color: var(--primary-blue);
-        border-radius: 50%;
+    .scanner-container {
+        min-height: calc(100vh - 120px);
         display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 32px;
-        margin: 0 auto 20px;
-        position: relative;
-        z-index: 1;
+        flex-direction: column;
+        gap: 24px;
+        padding-bottom: 40px;
     }
 
-    .pulse-avatar::after {
+    /* Enhanced Hero Scanner Section */
+    .scanner-hero {
+        background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+        border-radius: 40px;
+        padding: 40px;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.1);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .scanner-hero::before {
         content: '';
         position: absolute;
-        inset: -5px;
-        border-radius: 50%;
-        border: 2px solid var(--primary-blue);
-        opacity: 0.3;
-        animation: pulse-ring 2s infinite;
+        top: -50%;
+        right: -10%;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+        z-index: 0;
     }
 
-    @keyframes pulse-ring {
-        0% { transform: scale(1); opacity: 0.3; }
-        100% { transform: scale(1.5); opacity: 0; }
-    }
-
-    /* Scanner Viewport */
-    .viewport-container {
-        padding: 0 30px 40px;
+    .scanner-viewport-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 450px;
+        margin: 0 auto;
     }
 
     #reader {
         width: 100%;
-        border-radius: 28px;
-        overflow: hidden;
-        box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1);
-        border: 8px solid #ffffff;
-        background: #0f172a;
-        position: relative;
+        border-radius: 32px;
+        overflow: hidden !important;
+        border: 4px solid rgba(255,255,255,0.1);
+        background: #000;
+        box-shadow: 0 0 0 8px rgba(255,255,255,0.05);
+        aspect-ratio: 1/1;
     }
 
     #reader video {
         object-fit: cover !important;
-        transform: scale(1.1); /* Slight zoom for better focus area */
     }
 
-    /* Modern Overlay */
-    .scan-guide {
+    /* High-Tech Overlay */
+    .scan-overlay {
         position: absolute;
-        inset: 40px;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        border-radius: 20px;
-        z-index: 10;
+        inset: 0;
         pointer-events: none;
-    }
-
-    .scan-corner {
-        position: absolute;
-        width: 30px;
-        height: 30px;
-        border: 4px solid var(--primary-blue);
-        z-index: 11;
-    }
-    .c-tl { top: -2px; left: -2px; border-right: 0; border-bottom: 0; border-top-left-radius: 12px; }
-    .c-tr { top: -2px; right: -2px; border-left: 0; border-bottom: 0; border-top-right-radius: 12px; }
-    .c-bl { bottom: -2px; left: -2px; border-right: 0; border-top: 0; border-bottom-left-radius: 12px; }
-    .c-br { bottom: -2px; right: -2px; border-left: 0; border-top: 0; border-bottom-right-radius: 12px; }
-
-    .laser-line {
-        position: absolute;
-        left: 10px;
-        right: 10px;
-        height: 2px;
-        background: var(--primary-blue);
-        box-shadow: 0 0 15px var(--primary-blue), 0 0 30px var(--primary-blue);
-        top: 20%;
-        z-index: 12;
-        animation: scan-loop 3s infinite ease-in-out;
-    }
-
-    @keyframes scan-loop {
-        0%, 100% { top: 20%; opacity: 0.1; }
-        50% { top: 80%; opacity: 1; }
-    }
-
-    .status-badge {
-        margin-top: 30px;
-        padding: 14px 28px;
-        border-radius: 50px;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-        font-size: 13px;
-        display: inline-flex;
-        align-items: center;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 10px 20px -5px rgba(0,0,0,0.05);
-    }
-    
-    .st-idle { background: #f1f5f9; color: #64748b; }
-    .st-active { background: #eff6ff; color: var(--primary-blue); border: 1px solid rgba(37, 99, 235, 0.1); }
-    .st-ok { background: #ecfdf5; color: #059669; transform: scale(1.05); }
-
-    .control-actions {
+        z-index: 10;
         display: flex;
+        align-items: center;
         justify-content: center;
-        gap: 15px;
-        margin-top: -20px;
+    }
+
+    .scan-frame {
+        width: 70%;
+        height: 70%;
+        border: 2px solid rgba(255,255,255,0.2);
+        border-radius: 30px;
         position: relative;
-        z-index: 20;
     }
 
-    .btn-circle-pill {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
+    .frame-corner {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        border: 4px solid var(--accent);
+        filter: drop-shadow(0 0 8px var(--accent));
+    }
+    .tl { top: -4px; left: -4px; border-right: 0; border-bottom: 0; border-top-left-radius: 20px; }
+    .tr { top: -4px; right: -4px; border-left: 0; border-bottom: 0; border-top-right-radius: 20px; }
+    .bl { bottom: -4px; left: -4px; border-right: 0; border-top: 0; border-bottom-left-radius: 20px; }
+    .br { bottom: -4px; right: -4px; border-left: 0; border-top: 0; border-bottom-right-radius: 20px; }
+
+    .scan-laser {
+        position: absolute;
+        left: 5%;
+        right: 5%;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        box-shadow: 0 0 15px var(--accent);
+        top: 20%;
+        animation: laser-move 3s infinite ease-in-out;
+    }
+
+    @keyframes laser-move {
+        0%, 100% { top: 15%; opacity: 0; }
+        50% { top: 85%; opacity: 1; }
+    }
+
+    /* Controls */
+    .control-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        margin-top: 24px;
+    }
+
+    .btn-scanner-action {
+        width: 56px;
+        height: 56px;
+        border-radius: 18px;
+        background: var(--dark-glass);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: white;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 22px;
-        background: white;
-        color: var(--deep-blue);
-        border: none;
-        box-shadow: 0 15px 30px -10px rgba(0,0,0,0.2);
-        transition: 0.3s;
+        font-size: 20px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .btn-circle-pill:hover { transform: translateY(-5px) rotate(15deg); color: var(--primary-blue); }
-    .btn-circle-pill:active { transform: scale(0.9); }
+
+    .btn-scanner-action:hover {
+        transform: translateY(-4px);
+        background: var(--primary);
+        border-color: var(--primary);
+        box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+    }
+
+    /* Recent Scans List */
+    .recent-scans-card {
+        background: var(--glass);
+        backdrop-filter: blur(12px);
+        border-radius: 32px;
+        border: 1px solid rgba(255,255,255,0.5);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+    }
+
+    .scan-item {
+        padding: 16px 24px;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .scan-item:last-child { border-bottom: none; }
+
+    .student-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        background: var(--primary-glow);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 18px;
+    }
+
+    .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #10b981;
+        box-shadow: 0 0 8px #10b981;
+    }
+
+    /* Summary Stats */
+    .scan-stats {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+    }
+
+    .stat-pill {
+        flex: 1;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        padding: 12px;
+        border-radius: 20px;
+        text-align: center;
+    }
+
+    @media (max-width: 768px) {
+        .scanner-hero { padding: 30px 20px; border-radius: 30px; }
+        .scanner-container { padding: 10px; }
+    }
 </style>
 @endpush
 
 @section('content')
-<div class="scanner-page">
-    <div class="container">
-        {{-- Back Link --}}
-        <div class="mb-5 text-center">
-            <a href="{{ route('guru.dashboard') }}" class="text-decoration-none fw-bold text-muted hover-primary">
-                <i class="bi bi-arrow-left-circle-fill me-2 fs-5"></i> Kembali ke Dashboard
-            </a>
+<div class="scanner-container">
+    {{-- Header Content --}}
+    <div class="d-flex align-items-center justify-content-between mb-2">
+        <div>
+            <h4 class="fw-extrabold text-dark mb-0">Portal Presensi Cerdas</h4>
+            <p class="text-muted small fw-medium mb-0">Guru: <span class="text-primary">{{ Auth::guard('guru')->user()->nama }}</span></p>
         </div>
+        <a href="{{ route('guru.dashboard') }}" class="btn btn-light rounded-pill px-4 btn-sm fw-bold">
+            <i class="bi bi-x-lg me-2"></i> Tutup
+        </a>
+    </div>
 
-        <div class="scan-card fade-in">
-            <div class="scan-header">
-                <div class="pulse-avatar">
-                    <i class="bi bi-upc-scan"></i>
+    <div class="row g-4">
+        {{-- /* viewport scanner qr harian */ --}}
+        <div class="col-lg-6">
+            <div class="scanner-hero">
+                <div class="text-center mb-4 position-relative z-1">
+                    <span class="badge bg-primary bg-opacity-20 text-white border border-white border-opacity-20 px-3 py-2 rounded-pill mb-3 ls-1 fw-bold" style="font-size: 10px;">
+                        LIVE SCANNING ACTIVE
+                    </span>
+                    <h2 class="text-white fw-extrabold ls-tight">Arahkan Kamera</h2>
+                    <p class="text-white text-opacity-60 small" id="scan-status-text">MENUNGGU KAMERA...</p>
                 </div>
-                <h3 class="fw-extrabold text-dark mb-2">Smart Scanner</h3>
-                <p class="text-muted fw-medium px-4">Posisikan Kode QR siswa tepat di dalam bingkai pindaian untuk absensi otomatis.</p>
-            </div>
 
-            <div class="viewport-container text-center">
-                <div id="reader">
-                    {{-- UI Decorator on top of video --}}
-                    <div class="scan-guide">
-                        <div class="scan-corner c-tl"></div>
-                        <div class="scan-corner c-tr"></div>
-                        <div class="scan-corner c-bl"></div>
-                        <div class="scan-corner c-br"></div>
-                        <div class="laser-line"></div>
+                <div class="scanner-viewport-wrapper">
+                    <div id="reader"></div>
+                    <div class="scan-overlay">
+                        <div class="scan-frame">
+                            <div class="frame-corner tl"></div>
+                            <div class="frame-corner tr"></div>
+                            <div class="frame-corner bl"></div>
+                            <div class="frame-corner br"></div>
+                            <div class="scan-laser"></div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="control-actions">
-                    <button id="switchCamera" class="btn-circle-pill" title="Putar Kamera">
+                <div class="control-buttons position-relative z-1">
+                    <button id="switchCamera" class="btn-scanner-action" title="Ganti Kamera">
                         <i class="bi bi-camera-rotate"></i>
                     </button>
-                    <button id="btnRetry" class="btn-circle-pill" onclick="location.reload()" title="Refresh">
+                    <button class="btn-scanner-action" onclick="location.reload()" title="Refresh">
                         <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                    <button class="btn-scanner-action" id="torchToggle" title="Flashlight">
+                        <i class="bi bi-flashlight"></i>
                     </button>
                 </div>
 
-                <div id="scan-status" class="status-badge st-idle">
-                    <div class="spinner-grow spinner-grow-sm me-2" role="status"></div>
-                    Menginisialisasi Kamera...
+                <div class="scan-stats position-relative z-1">
+                    <div class="stat-pill">
+                        <div class="text-white-50 small fw-bold">TOTAL SCAN</div>
+                        <div class="text-white fw-extrabold fs-4" id="sess-total">0</div>
+                    </div>
+                    <div class="stat-pill">
+                        <div class="text-white-50 small fw-bold">TERAKHIR</div>
+                        <div class="text-white fw-bold small" id="sess-last">-</div>
+                    </div>
                 </div>
             </div>
-            
-            <div class="bg-light p-4 text-center border-top">
-                <span class="text-muted small fw-bold text-uppercase ls-1">PresenceX v2.0 - Secure Attendance System</span>
+        </div>
+
+        {{-- /* list aktivitas pindaian terbaru */ --}}
+        <div class="col-lg-6">
+            <div class="recent-scans-card h-100">
+                <div class="p-4 border-bottom d-flex align-items-center justify-content-between">
+                    <h5 class="fw-extrabold text-dark mb-0">Aktivitas Terbaru Hari Ini</h5>
+                    <i class="bi bi-clock-history text-primary"></i>
+                </div>
+                <div id="recent-scans-list" style="max-height: 500px; overflow-y: auto;">
+                    {{-- Virtual list placeholder or server-side rendered initial items --}}
+                    @forelse($recent_absensi ?? [] as $abs)
+                    <div class="scan-item">
+                        <div class="student-avatar">{{ substr($abs->siswa->nama, 0, 1) }}</div>
+                        <div class="flex-grow-1">
+                            <div class="fw-extrabold text-dark" style="font-size: 14px;">{{ $abs->siswa->nama }}</div>
+                            <div class="text-muted" style="font-size: 11px;">NIS: {{ $abs->siswa->nis }} • {{ $abs->created_at->format('H:i') }}</div>
+                        </div>
+                        <div class="status-indicator"></div>
+                    </div>
+                    @empty
+                    <div class="p-5 text-center text-muted">
+                        <i class="bi bi-cloud-slash display-4 d-block mb-3 opacity-20"></i>
+                        <p class="fw-bold small">Belum ada data pindaian dalam sesi ini.</p>
+                    </div>
+                    @endforelse
+                </div>
+                <div class="p-4 bg-light bg-opacity-50 border-top text-center" style="border-radius: 0 0 32px 32px;">
+                    <a href="{{ route('absensi.index') }}" class="text-decoration-none small fw-bold text-primary">LIHAT SEMUA LOG ABSENSI <i class="bi bi-arrow-right ms-1"></i></a>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
+{{-- 
+    FUNGSI: Formulir Tersembunyi (Hidden Form) 
+    Tujuan: HTML Form ini tidak terlihat di layar, tapi digunakan oleh Javascript 
+            untuk mengirimkan hasil bacaan kamera (teks QR) ke Controller Laravel
+--}}
 <form id="scanForm" action="{{ route('absensi.prosesScan') }}" method="POST" class="d-none">
     @csrf
+    <!-- Input ini akan diisi secara otomatis oleh Javascript saat QR Code terdeteksi -->
     <input type="hidden" name="qr_code" id="qr_input">
 </form>
+
+{{-- Audio Feedback --}}
+<audio id="beepReady" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+<audio id="beepSuccess" src="https://assets.mixkit.co/active_storage/sfx/2218/2218-preview.mp3" preload="auto"></audio>
 @endsection
 
 @push('scripts')
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script>
-    const html5QrCode = new Html5Qrcode("reader");
-    let isProcessing = false;
+    document.addEventListener('DOMContentLoaded', function() {
+        // 1. Inisialisasi Pustaka Scanner
+        // Tujuan: Mengubah div dengan id="reader" menjadi layar tampilan kamera
+        const html5QrCode = new Html5Qrcode("reader");
+        let isScanning = false;
+        let scanCount = 0;
 
-    const qrConfig = { 
-        fps: 20, 
-        qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.0
-    };
+        // Pengaturan Kamera dan Kotak Fokus (QR Box)
+        const qrConfig = { 
+            fps: 20, 
+            qrbox: (viewWidth, viewHeight) => {
+                const boxSize = Math.min(viewWidth, viewHeight) * 0.7;
+                return { width: boxSize, height: boxSize };
+            },
+            aspectRatio: 1.0,
+            showTorchButtonIfSupported: true
+        };
 
-    function handleSuccess(decodedText) {
-        if (isProcessing) return;
-        isProcessing = true;
-
-        const statusLabel = document.getElementById('scan-status');
-        statusLabel.className = 'status-badge st-ok';
-        statusLabel.innerHTML = '<i class="bi bi-check-all fs-5 me-2"></i> BERHASIL DIPINDAI';
-
-        // Feedback Vibration if supported
-        if (window.navigator && window.navigator.vibrate) {
-            window.navigator.vibrate(100);
-        }
-
-        document.getElementById('qr_input').value = decodedText;
-        
-        Swal.fire({
-            title: 'Berhasil!',
-            text: 'Mencatat kehadiran siswa...',
-            icon: 'success',
-            showConfirmButton: false,
-            timer: 1000,
-            timerProgressBar: true,
-            backdrop: `rgba(37, 99, 235, 0.1)`,
-            willClose: () => {
-                document.getElementById('scanForm').submit();
+        // Fungsi Memutar Suara / Bunyi Beep
+        function playSound(id) {
+            const sound = document.getElementById(id);
+            if(sound) {
+                sound.currentTime = 0;
+                sound.play().catch(e => console.log("Audio play blocked"));
             }
-        });
-    }
-
-    Html5Qrcode.getCameras().then(devices => {
-        if (devices && devices.length > 0) {
-            const cameraId = devices[devices.length - 1].id; // Back camera
-            
-            html5QrCode.start(cameraId, qrConfig, handleSuccess)
-                .then(() => {
-                    const statusLabel = document.getElementById('scan-status');
-                    statusLabel.className = 'status-badge st-active';
-                    statusLabel.innerHTML = '<i class="bi bi-broadcast me-2"></i> SCANNER AKTIF';
-                })
-                .catch(err => {
-                    console.error(err);
-                    document.getElementById('scan-status').innerHTML = "Gagal mengakses kamera.";
-                });
         }
-    });
 
-    // Hover effect for back link
-    document.querySelector('.hover-primary').addEventListener('mouseenter', function() {
-        this.style.color = 'var(--primary-blue)';
-    });
-    document.querySelector('.hover-primary').addEventListener('mouseleave', function() {
-        this.style.color = '#64748b';
+        /**
+         * FUNGSI: Aksi Jika QR Code Berhasil Dibaca (onScanSuccess)
+         * Tujuan: Mengambil teks hasil bacaan kamera, menaruhnya di form tersembunyi, 
+         *         dan mengirimnya langsung ke Controller tanpa diklik manual.
+         */
+        function onScanSuccess(decodedText) {
+            if (isScanning) return;
+            isScanning = true; // Mencegah scan berulang (SPAM)
+            
+            // Memutar suara sukses dan memberikan getaran pada HP
+            playSound('beepSuccess');
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+            const frame = document.querySelector('.scan-frame');
+            frame.style.borderColor = '#10b981';
+            frame.style.boxShadow = '0 0 40px rgba(16, 185, 129, 0.6)';
+
+            document.getElementById('scan-status-text').innerHTML = "VERIFIKASI...";
+
+            // A. Memasukkan teks yang dibaca kamera ke input form tersembunyi
+            document.getElementById('qr_input').value = decodedText;
+            
+            // B. Mengirim (Submit) formulir ke alamat route('absensi.prosesScan')
+            document.getElementById('scanForm').submit();
+        }
+
+        /**
+         * FUNGSI: Menghidupkan Kamera (startScanner)
+         * Tujuan: Meminta izin ke perangkat untuk menyalakan kamera belakang 
+         *         dan memulai proses pencarian QR Code.
+         */
+        function startScanner() {
+            html5QrCode.start(
+                { facingMode: "environment" }, // Prioritaskan Kamera Belakang
+                qrConfig, 
+                onScanSuccess
+            ).then(() => {
+                isScanning = false;
+                playSound('beepReady');
+                document.getElementById('scan-status-text').innerHTML = "SCANNER AKTIF";
+            }).catch(err => {
+                console.error("Camera Error:", err);
+                // Fallback (Alternatif) jika kamera belakang gagal diakses, cari kamera lain yang tersedia
+                Html5Qrcode.getCameras().then(devices => {
+                    const cameraId = devices.length > 0 ? devices[devices.length - 1].id : null;
+                    if (cameraId) html5QrCode.start(cameraId, qrConfig, onScanSuccess);
+                }).catch(e => {
+                    Swal.fire({
+                        title: 'Akses Kamera Ditolak!',
+                        text: 'Browser memblokir kamera. Jika Anda menggunakan HP melalui WiFi lokal (HTTP), browser (Google Chrome/Safari) menolaknya demi keamanan. Gunakan HTTPS, atau buka chrome://flags di HP dan cari "insecure origins treated as secure", lalu tambahkan IP ini.',
+                        icon: 'error',
+                        confirmButtonText: 'Mengerti'
+                    });
+                    document.getElementById('scan-status-text').innerHTML = "AKSES KAMERA DITOLAK BROWSER";
+                });
+            });
+        }
+
+        // Jalankan pelacakan kamera secara otomatis ketika halaman selesai dimuat.
+        startScanner();
+
+        // Control handlers
+        document.getElementById('switchCamera').addEventListener('click', function() {
+            html5QrCode.stop().then(() => startScanner());
+        });
     });
 </script>
 @endpush

@@ -3,6 +3,7 @@
 @section('content')
     <div class="container py-4">
 
+        {{-- /* form input absensi harian tunggal */ --}}
         <div class="card border-0 shadow-lg rounded-4">
             <div class="card-header text-white" style="background: linear-gradient(135deg, #1E88E5, #42A5F5);">
                 <h5 class="mb-0">📝 Input Absensi Siswa</h5>
@@ -16,7 +17,7 @@
 
                         <div class="col-md-6">
                             <label class="form-label">Siswa</label>
-                            <select name="siswa_id" class="form-select shadow-sm" required>
+                            <select name="siswa_id" class="form-select select2 shadow-sm" required>
                                 <option value="">-- Pilih Siswa --</option>
                                 @foreach($siswa as $s)
                                     <option value="{{ $s->id }}">{{ $s->nama }}</option>
@@ -26,7 +27,7 @@
 
                         <div class="col-md-6">
                             <label class="form-label">Guru</label>
-                            <select name="guru_id" class="form-select shadow-sm" required>
+                            <select name="guru_id" class="form-select select2 shadow-sm" required>
                                 <option value="">-- Pilih Guru --</option>
                                 @foreach($guru as $g)
                                     <option value="{{ $g->id }}">{{ $g->nama }}</option>
@@ -36,7 +37,7 @@
 
                         <div class="col-md-6">
                             <label class="form-label">Rombongan Belajar</label>
-                            <select name="rombongan_belajar_id" class="form-select shadow-sm" required>
+                            <select name="rombongan_belajar_id" class="form-select select2 shadow-sm" required>
                                 <option value="">-- Pilih Rombel --</option>
                                 @foreach($rombongan as $r)
                                     <option value="{{ $r->id }}">

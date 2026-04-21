@@ -12,9 +12,9 @@
             </div>
             <div class="col-sm-6 text-md-end mt-3 mt-md-0">
                 <div class="d-flex flex-wrap justify-content-md-end gap-2">
-                    <button type="button" class="btn btn-outline-primary btn-lg rounded-4 px-4 hover-up" data-bs-toggle="modal" data-bs-target="#syncModal">
-                        <i class="bi bi-lightning-charge-fill me-2"></i> Sinkron API Masal
-                    </button>
+                    <a href="{{ route('anggota-kelas.syncApi') }}" class="btn btn-outline-primary btn-lg rounded-4 px-4 hover-up">
+                        <i class="bi bi-cloud-download-fill me-2"></i> Sinkron API Masal
+                    </a>
                     <a href="{{ route('anggota-kelas.create') }}" class="btn btn-primary btn-lg rounded-4 shadow-lg px-4 hover-up">
                         <i class="bi bi-person-plus-fill me-2"></i> Tambah Anggota
                     </a>
@@ -141,49 +141,6 @@
             </div>
         </div>
         @endif
-    </div>
-</div>
-
-<!-- Modal Sync API -->
-<div class="modal fade" id="syncModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg rounded-5 overflow-hidden">
-            <div class="modal-header bg-primary text-white p-4" style="background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%) !important;">
-                <h5 class="modal-title fw-bold"><i class="bi bi-lightning-charge-fill me-2"></i>Sinkronisasi API Masal</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form action="{{ route('anggota-kelas.syncApi') }}" method="POST">
-                @csrf
-                <div class="modal-body p-4 p-md-5">
-                    <div class="alert bg-blue-soft border border-primary border-opacity-10 text-primary rounded-4 mb-4 small">
-                        <i class="bi bi-info-circle-fill me-2"></i> Sistem akan mencocokkan data API berdasarkan <b>Nama Rombel</b> yang ada di SISTER.
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label class="form-label fw-bold text-dark small text-uppercase ls-1">Pilih Kelas Lokal</label>
-                        <select name="rombongan_belajar_id" class="form-select form-select-lg rounded-4 border-light shadow-sm" required>
-                            <option value="">-- Pilih Kelas Tujuan --</option>
-                            @foreach($rombels as $r)
-                                <option value="{{ $r->id }}">{{ $r->nama_kelas }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="mb-0">
-                        <label class="form-label fw-bold text-dark small text-uppercase ls-1">Tahun Ajaran</label>
-                        <select name="tahun_ajar_id" class="form-select form-select-lg rounded-4 border-light shadow-sm" required>
-                            @foreach($tahunAjars as $t)
-                                <option value="{{ $t->id }}" {{ $t->aktif ? 'selected' : '' }}>{{ $t->tahun }} {{ $t->aktif ? '(Aktif)' : '' }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer border-0 p-4 pt-0">
-                    <button type="button" class="btn btn-light btn-lg rounded-4 px-4 fw-bold" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary btn-lg rounded-4 px-4 shadow-lg fw-bold">Mulai Sinkronisasi</button>
-                </div>
-            </form>
-        </div>
     </div>
 </div>
 

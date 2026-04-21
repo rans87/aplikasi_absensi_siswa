@@ -1,0 +1,11 @@
+﻿Field	Type	Null	Key	Default	Extra
+id	bigint unsigned	NO	PRI	NULL	auto_increment
+rombongan_belajar_id	bigint unsigned	NO	MUL	NULL	
+mata_pelajaran_id	bigint unsigned	NO	MUL	NULL	
+guru_id	bigint unsigned	NO	MUL	NULL	
+tanggal	date	YES		NULL	
+jam_mulai	time	NO		NULL	
+jam_selesai	time	NO		NULL	
+urutan	int	NO		1	
+created_at	timestamp	YES		NULL	
+updated_at	timestamp	YES		NULL	

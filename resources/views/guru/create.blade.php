@@ -58,14 +58,7 @@
                         @enderror
                     </div>
 
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">Password</label>
-                        <input type="password" name="password" class="form-control @error('password') is-invalid @enderror"
-                            required>
-                        @error('password')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
+
 
                     {{-- ================= BUTTON ================= --}}
                     <div class="d-flex justify-content-between">

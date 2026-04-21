@@ -31,6 +31,16 @@
                         <input type="text" name="api_rombel_id" class="form-control">
                     </div>
 
+                    <div class="mb-3">
+                        <label class="form-label">Wali Kelas</label>
+                        <select name="wali_kelas_id" class="form-select select2">
+                            <option value="">-- Tanpa Wali Kelas --</option>
+                            @foreach($gurus as $guru)
+                                <option value="{{ $guru->id }}">{{ $guru->nama }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     <button class="btn btn-primary">Simpan</button>
                     <a href="{{ route('rombongan-belajar.index') }}" class="btn btn-secondary">Batal</a>
                 </form>

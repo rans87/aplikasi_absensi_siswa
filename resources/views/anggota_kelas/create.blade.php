@@ -25,7 +25,7 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-bold text-primary">Siswa</label>
-                        <select name="siswa_id" class="form-select">
+                        <select name="siswa_id" class="form-select select2">
                             <option value="">-- Pilih Siswa --</option>
                             @foreach($siswa as $s)
                                 <option value="{{ $s->id }}">{{ $s->nama }}</option>
@@ -35,7 +35,7 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-bold text-primary">Rombongan Belajar</label>
-                        <select name="rombongan_belajar_id" class="form-select">
+                        <select name="rombongan_belajar_id" class="form-select select2">
                             <option value="">-- Pilih Rombel --</option>
                             @foreach($rombel as $r)
                                 <option value="{{ $r->id }}">
@@ -47,7 +47,7 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-bold text-primary">Tahun Ajar</label>
-                        <select name="tahun_ajar_id" class="form-select">
+                        <select name="tahun_ajar_id" class="form-select select2">
                             @foreach($tahunAjar as $t)
                                 <option value="{{ $t->id }}">{{ $t->tahun }}</option>
                             @endforeach

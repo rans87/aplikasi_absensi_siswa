@@ -32,6 +32,18 @@
                             value="{{ old('tingkat', $rombonganBelajar->tingkat) }}" min="1" max="4" required>
                     </div>
 
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Wali Kelas</label>
+                        <select name="wali_kelas_id" class="form-select select2">
+                            <option value="">-- Tanpa Wali Kelas --</option>
+                            @foreach($gurus as $guru)
+                                <option value="{{ $guru->id }}" {{ old('wali_kelas_id', $rombonganBelajar->wali_kelas_id) == $guru->id ? 'selected' : '' }}>
+                                    {{ $guru->nama }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     <div class="d-flex justify-content-between">
                         <a href="{{ route('rombongan-belajar.index') }}" class="btn btn-secondary">
                             <i class="bi bi-arrow-left"></i> Kembali

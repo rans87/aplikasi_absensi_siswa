@@ -13,7 +13,7 @@
             <div class="col-sm-6 text-md-end mt-3 mt-md-0">
                 <div class="d-flex flex-wrap justify-content-md-end gap-2">
                     <a href="{{ route('rombongan-belajar.sync') }}" class="btn btn-outline-primary btn-lg rounded-4 px-4 hover-up">
-                        <i class="bi bi-cloud-download me-2"></i> Sinkron API
+                        <i class="bi bi-cloud-download-fill me-2"></i> Sinkron API Masal
                     </a>
                     <a href="{{ route('rombongan-belajar.create') }}" class="btn btn-primary btn-lg rounded-4 shadow-lg px-4 hover-up">
                         <i class="bi bi-plus-square-fill me-2"></i> Tambah Kelas
@@ -81,7 +81,10 @@
                                 </div>
                                 <div>
                                     <div class="fw-extrabold text-dark fs-6">{{ $r->nama_kelas }}</div>
-                                    <div class="text-muted small">ID Rombel: {{ $r->api_rombel_id ?? 'MANUAL' }}</div>
+                                    <div class="text-muted small">
+                                        <i class="bi bi-person-check-fill text-warning me-1"></i>
+                                        Wali: {{ $r->waliKelas->nama ?? 'Belum Ditentukan' }}
+                                    </div>
                                 </div>
                             </div>
                         </td>
@@ -95,6 +98,9 @@
                         </td>
                         <td class="pe-4 text-end">
                             <div class="d-flex justify-content-end gap-2">
+                                <button type="button" class="btn btn-sm btn-light text-success rounded-3 border p-2 show-students" data-id="{{ $r->id }}" data-name="{{ $r->nama_kelas }}" title="Lihat Daftar Siswa">
+                                    <i class="bi bi-people-fill fs-5"></i>
+                                </button>
                                 <a href="{{ route('rombongan-belajar.edit', $r->id) }}" class="btn btn-sm btn-light text-primary rounded-3 border p-2" title="Edit Rombel">
                                     <i class="bi bi-pencil-square fs-5"></i>
                                 </a>
@@ -135,11 +141,44 @@
     </div>
 </div>
 
+<!-- Modal Daftar Siswa -->
+<div class="modal fade" id="siswaModal" tabindex="-1" aria-labelledby="siswaModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0 px-4 pt-4">
+                <h5 class="modal-title fw-extrabold text-dark px-2" id="siswaModalLabel">Daftar Siswa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="table-responsive rounded-3 border">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="text-center" style="width: 50px">NO</th>
+                                <th>NAMA SISWA</th>
+                                <th>NIS</th>
+                                <th>L/P</th>
+                            </tr>
+                        </thead>
+                        <tbody id="siswaTableBody">
+                            <!-- Data will be loaded via AJAX -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
     .fw-extrabold { font-weight: 800; }
     .ls-1 { letter-spacing: 0.5px; }
     .text-rose { color: #e11d48; }
     .bg-blue-soft { background-color: #eff6ff; }
+    .bg-pink-soft { background-color: #fff1f2; }
     .hover-up:hover { transform: translateY(-3px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.1) !important; transition: all 0.3s ease; }
     
     .pagination .page-link { border: none; padding: 0.6rem 1rem; margin: 0 3px; border-radius: 12px !important; color: #64748b; font-weight: 600; }
@@ -147,6 +186,48 @@
 </style>
 
 <script>
+    // Modal student list
+    document.querySelectorAll('.show-students').forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const name = this.getAttribute('data-name');
+            const modal = new bootstrap.Modal(document.getElementById('siswaModal'));
+            const tableBody = document.getElementById('siswaTableBody');
+            
+            document.getElementById('siswaModalLabel').innerText = 'Daftar Siswa: ' + name;
+            tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4"><div class="spinner-border text-primary" role="status"></div><div class="mt-2">Memuat data...</div></td></tr>';
+            
+            modal.show();
+
+            fetch(`/rombongan-belajar/${id}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(res => {
+                if (res.success && res.data.length > 0) {
+                    tableBody.innerHTML = '';
+                    res.data.forEach((siswa, index) => {
+                        tableBody.innerHTML += `
+                            <tr>
+                                <td class="text-center">${index + 1}</td>
+                                <td class="fw-bold">${siswa.nama}</td>
+                                <td>${siswa.nis ?? '-'}</td>
+                                <td>${siswa.jenis_kelamin === 'L' ? '<span class="badge bg-blue-soft text-primary">Laki-laki</span>' : '<span class="badge bg-pink-soft text-danger">Perempuan</span>'}</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-5"><i class="bi bi-info-circle fs-1 text-muted d-block mb-2"></i><br>Tidak ada siswa di kelas ini.</td></tr>';
+                }
+            })
+            .catch(err => {
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-danger py-4">Gagal memuat data siswa.</td></tr>';
+            });
+        });
+    });
+
     document.querySelectorAll('.confirm-delete').forEach(button => {
         button.addEventListener('click', function() {
             Swal.fire({

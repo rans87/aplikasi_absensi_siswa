@@ -104,8 +104,8 @@
                         </td>
                         <td class="text-center">
                             <div class="qr-preview-box shadow-sm mx-auto" 
-                                 onclick="showQR(`{!! base64_encode(QrCode::size(300)->generate($item->qr_code)) !!}`, '{{ $item->nama }}')">
-                                {!! QrCode::size(40)->generate($item->qr_code) !!}
+                                 onclick="showQR(`{!! base64_encode(QrCode::size(300)->generate($item->qr_code ?? 'fallback')) !!}`, '{{ $item->nama }}')">
+                                {!! QrCode::size(40)->generate($item->qr_code ?? 'fallback') !!}
                                 <div class="qr-overlay"><i class="bi bi-zoom-in"></i></div>
                             </div>
                         </td>
@@ -238,6 +238,12 @@
     @keyframes modalFadeUp {
         from { transform: translateY(30px); opacity: 0; }
         to { transform: translateY(0); opacity: 1; }
+    }
+
+    @media (max-width: 576px) {
+        .qr-modal-card { padding: 25px; border-radius: 20px; margin: 15px; }
+        .qr-header { margin-bottom: 20px; }
+        .qr-modal-body img { max-width: 200px; }
     }
 
     .pagination .page-link { border: none; padding: 0.6rem 1rem; margin: 0 3px; border-radius: 12px !important; color: #64748b; font-weight: 600; }

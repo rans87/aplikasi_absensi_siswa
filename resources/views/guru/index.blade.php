@@ -12,6 +12,9 @@
                 <p class="text-muted mt-2 fw-medium">Kelola informasi tenaga pendidik dan akses sistem guru.</p>
             </div>
             <div class="col-sm-6 text-md-end mt-3 mt-md-0">
+                <a href="{{ route('guru.sync') }}" class="btn btn-info btn-lg rounded-4 shadow-lg px-4 hover-up me-2 text-white">
+                    <i class="bi bi-arrow-repeat me-2"></i> Sync API
+                </a>
                 <a href="{{ route('guru.create') }}" class="btn btn-primary btn-lg rounded-4 shadow-lg px-5 hover-up">
                     <i class="bi bi-plus-circle-fill me-2"></i> Tambah Guru Baru
                 </a>
@@ -76,7 +79,12 @@
                                     <i class="bi bi-person-fill fs-4"></i>
                                 </div>
                                 <div>
-                                    <div class="fw-extrabold text-dark fs-6">{{ $g->nama }}</div>
+                                    <div class="fw-extrabold text-dark fs-6">
+                                        {{ $g->nama }}
+                                        @if($g->kelasWali)
+                                            <span class="badge bg-warning-soft text-warning ms-2 ls-1" style="font-size: 8px;">WALI: {{ $g->kelasWali->nama_kelas }}</span>
+                                        @endif
+                                    </div>
                                     <div class="text-muted small"><i class="bi bi-fingerprint me-1"></i>NIP: {{ $g->nip ?? 'Belum ada NIP' }}</div>
                                 </div>
                             </div>
@@ -92,6 +100,9 @@
                         </td>
                         <td class="pe-4 text-end">
                             <div class="d-flex justify-content-end gap-2">
+                                <a href="{{ route('guru.show', $g->id) }}" class="btn btn-sm btn-light text-info rounded-3 shadow-sm border p-2" title="Lihat Biodata">
+                                    <i class="bi bi-person-lines-fill fs-5"></i>
+                                </a>
                                 <a href="{{ route('guru.edit', $g->id) }}" class="btn btn-sm btn-light text-primary rounded-3 shadow-sm border p-2" title="Edit Data">
                                     <i class="bi bi-pencil-square fs-5"></i>
                                 </a>

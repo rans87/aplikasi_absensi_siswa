@@ -25,8 +25,18 @@
                     </div>
 
                     <div class="mb-3">
+                        <label class="form-label fw-bold">Email</label>
+                        <input type="email" name="email" value="{{ $guru->email }}" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
                         <label class="form-label fw-bold">No HP</label>
                         <input type="text" name="no_hp" value="{{ $guru->no_hp }}" class="form-control">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Password <small class="text-muted text-italic">(Kosongkan jika tidak ingin mengubah)</small></label>
+                        <input type="password" name="password" class="form-control" placeholder="Minimal 6 karakter">
                     </div>
 
                     <div class="d-flex justify-content-between">

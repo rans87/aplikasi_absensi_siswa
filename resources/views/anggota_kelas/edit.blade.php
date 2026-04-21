@@ -13,7 +13,7 @@
 
                     <div class="mb-3">
                         <label class="form-label text-primary fw-semibold">Siswa</label>
-                        <select name="siswa_id" class="form-select rounded-3 shadow-sm">
+                        <select name="siswa_id" class="form-select select2 rounded-3 shadow-sm">
                             @foreach($siswas as $s)
                                 <option value="{{ $s['id'] }}" {{ $anggota->siswa_id == $s['id'] ? 'selected' : '' }}>
                                     {{ $s['nama'] }}
@@ -24,7 +24,7 @@
 
                     <div class="mb-3">
                         <label class="form-label text-primary fw-semibold">Rombel</label>
-                        <select name="rombongan_belajar_id" class="form-select rounded-3 shadow-sm">
+                        <select name="rombongan_belajar_id" class="form-select select2 rounded-3 shadow-sm">
                             @foreach($rombels as $r)
                                 <option value="{{ $r['id'] }}" {{ $anggota->rombongan_belajar_id == $r['id'] ? 'selected' : '' }}>
                                     {{ $r['nama'] }}
@@ -35,7 +35,7 @@
 
                     <div class="mb-3">
                         <label class="form-label text-primary fw-semibold">Tahun Ajar</label>
-                        <select name="tahun_ajar_id" class="form-select rounded-3 shadow-sm">
+                        <select name="tahun_ajar_id" class="form-select select2 rounded-3 shadow-sm">
                             @foreach($tahunAjar as $t)
                                 <option value="{{ $t->id }}" {{ $anggota->tahun_ajar_id == $t->id ? 'selected' : '' }}>
                                     {{ $t->nama }}

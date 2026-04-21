@@ -9,7 +9,7 @@
         <div class="card border-0 shadow-premium overflow-hidden fade-in hero-dashboard">
             <div class="card-body p-0 position-relative">
                 <div class="hero-bg-accent"></div>
-                <div class="p-5 p-md-5 position-relative z-1">
+                <div class="p-4 p-md-5 position-relative z-1">
                     <div class="row align-items-center">
                         <div class="col-lg-8">
                             <div class="d-flex align-items-center gap-2 mb-4">
@@ -41,25 +41,26 @@
         $stats = [
             ['Total Siswa', $total_siswa, 'bi-people-fill', 'primary', 'Siswa Terdaftar'],
             ['Guru Aktif', $total_guru, 'bi-person-badge-fill', 'indigo', 'Tenaga Pendidik'],
-            ['Absensi/Harian', $absensi_hari_ini, 'bi-calendar-check-fill', 'emerald', 'Total Scan'],
-            ['Pelanggaran', $total_pelanggaran, 'bi-exclamation-triangle-fill', 'rose', 'Poin Kedisiplinan'],
+            ['Absensi Hari Ini', $absensi_hari_ini, 'bi-calendar-check-fill', 'emerald', 'Total Scan'],
+            ['Kelas', $total_kelas, 'bi-layers-fill', 'info', 'Rombongan Belajar'],
         ];
     @endphp
 
     @foreach($stats as $s)
-    <div class="col-xl-3 col-md-6">
+    <div class="col-xl-2 col-lg-3 col-md-4 col-6">
         <div class="card border-0 h-100 overflow-hidden shadow-sm hover-up-premium">
-            <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div class="icon-box-premium bg-{{ $s[3] }}-soft text-{{ $s[3] }}">
+            <div class="card-body p-3 p-md-4">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="icon-box-premium bg-{{ $s[3] }}-soft text-{{ $s[3] }} d-none d-sm-flex">
                         <i class="bi {{ $s[2] }}"></i>
                     </div>
-                    <div class="badge-growth bg-{{ $s[3] }}-soft text-{{ $s[3] }}">+{{ rand(1, 5) }}%</div>
+                    <div class="icon-box-premium bg-{{ $s[3] }}-soft text-{{ $s[3] }} d-flex d-sm-none" style="width: 32px; height: 32px; font-size: 1rem;">
+                        <i class="bi {{ $s[2] }}"></i>
+                    </div>
                 </div>
                 <div>
-                    <h3 class="fw-extrabold mb-1 ls-tight">{{ number_format($s[1]) }}</h3>
-                    <div class="text-dark fw-bold small text-uppercase ls-1 opacity-75">{{ $s[0] }}</div>
-                    <p class="text-muted small mb-0 mt-1">{{ $s[4] }}</p>
+                    <h3 class="fw-extrabold mb-1 ls-tight h4-mobile">{{ number_format($s[1]) }}</h3>
+                    <div class="text-dark fw-bold small text-uppercase ls-1 opacity-75" style="font-size: 9px;">{{ $s[0] }}</div>
                 </div>
             </div>
             <div class="card-footer-mini bg-{{ $s[3] }}"></div>
@@ -68,96 +69,149 @@
     @endforeach
 </div>
 
-<div class="row g-4">
-    {{-- Live Activity Center (Violations & Achievements) --}}
-    <div class="col-12">
-        <div class="row g-4">
-            {{-- Recent Violations --}}
-            <div class="col-lg-6">
-                <div class="card border-0 shadow-sm h-100 bg-white">
-                    <div class="card-header border-0 bg-transparent p-4 d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center">
-                            <div class="bg-rose bg-opacity-10 p-2 rounded-4 me-3">
-                                <i class="bi bi-patch-exclamation-fill text-rose fs-4"></i>
-                            </div>
-                            <div>
-                                <h5 class="mb-0 fw-extrabold text-dark">Pelanggaran Baru</h5>
-                                <small class="text-muted fw-medium">Input poin negatif terbaru</small>
-                            </div>
-                        </div>
+{{-- Attendance Trend & Monthly Stats & Radar Chart --}}
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100 bg-white">
+            <div class="card-header border-0 bg-transparent p-4 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <div class="bg-primary bg-opacity-10 p-2 rounded-4 me-3">
+                        <i class="bi bi-graph-up-arrow text-primary fs-4"></i>
                     </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0 border-0">
-                                <tbody>
-                                    @forelse($recent_points as $p)
-                                    <tr>
-                                        <td class="ps-4 py-3">
-                                            <div class="d-flex align-items-center">
-                                                <div class="avatar-circle-sm bg-light text-primary fw-extrabold me-3">{{ substr($p->siswa->nama ?? 'S', 0, 1) }}</div>
-                                                <div>
-                                                    <div class="fw-bold text-dark small ls-tight">{{ Str::limit($p->siswa->nama ?? 'Siswa', 25) }}</div>
-                                                    <div class="text-muted mt-1" style="font-size: 10px;"><i class="bi bi-clock me-1"></i>{{ $p->created_at->diffForHumans() }}</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td><span class="badge bg-rose-soft text-rose border-0 fw-bold small">{{ Str::limit($p->nama_pelanggaran, 18) }}</span></td>
-                                        <td class="pe-4 text-end">
-                                            <span class="text-rose fw-extrabold small fs-6">-{{ $p->poin }}</span>
-                                        </td>
-                                    </tr>
-                                    @empty
-                                    <tr><td colspan="3" class="text-center py-5 text-muted small fw-bold">Belum ada pelanggaran</td></tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
+                    <div>
+                        <h5 class="mb-0 fw-extrabold text-dark">Tren Kehadiran 7 Hari</h5>
+                        <small class="text-muted fw-medium">Statistik scan harian</small>
                     </div>
                 </div>
             </div>
+            <div class="card-body p-4 pt-0">
+                <div class="attendance-chart d-flex align-items-end justify-content-between gap-1 gap-md-2" style="height: 180px;">
+                    @php 
+                        $trendCounts = array_column($attendance_trend, 'count');
+                        $maxCount = count($trendCounts) > 0 ? max(max($trendCounts), 1) : 1;
+                    @endphp
+                    @foreach($attendance_trend as $trend)
+                    <div class="chart-bar-wrapper text-center flex-fill" style="min-width: 0;">
+                        <div class="chart-count fw-bold text-muted mb-2" style="font-size: 10px;">{{ $trend['count'] }}</div>
+                        <div class="chart-bar mx-auto" style="height: {{ max(($trend['count'] / $maxCount) * 140, 8) }}px; background: linear-gradient(180deg, var(--primary-blue), var(--secondary-blue)); border-radius: 8px 8px 4px 4px; width: 100%; max-width: 40px; transition: all 0.3s ease;"></div>
+                        <div class="chart-label mt-2">
+                            <div class="fw-bold text-muted" style="font-size: 9px;">{{ $trend['day'] }}</div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </div>
 
-            {{-- Recent Achievements --}}
-            <div class="col-lg-6">
-                <div class="card border-0 shadow-sm h-100 bg-white">
-                    <div class="card-header border-0 bg-transparent p-4 d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center">
-                            <div class="bg-emerald bg-opacity-10 p-2 rounded-4 me-3">
-                                <i class="bi bi-award-fill text-emerald fs-4"></i>
+    <div class="col-lg-3">
+        <div class="card border-0 shadow-sm h-100 bg-white">
+            <div class="card-header border-0 bg-transparent p-4">
+                <div class="d-flex align-items-center">
+                    <div class="bg-indigo bg-opacity-10 p-2 rounded-4 me-3">
+                        <i class="bi bi-bullseye text-indigo fs-4"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-0 fw-extrabold text-dark">Indeks Karakter</h5>
+                        <small class="text-muted fw-medium">Rata-rata Global</small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-4 pt-0">
+                <div style="height: 200px;">
+                    <canvas id="radarChartAdmin"></canvas>
+                </div>
+                <div class="mt-3 text-center">
+                    <span class="badge bg-indigo-soft text-indigo rounded-pill px-3 py-2 fw-bold small">Data Terpusat</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3">
+        <div class="card border-0 shadow-sm h-100 bg-white">
+            <div class="card-header border-0 bg-transparent p-4">
+                <div class="d-flex align-items-center">
+                    <div class="bg-emerald bg-opacity-10 p-2 rounded-4 me-3">
+                        <i class="bi bi-pie-chart-fill text-emerald fs-4"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-0 fw-extrabold text-dark">Rekap Bulanan</h5>
+                        <small class="text-muted fw-medium">{{ now()->translatedFormat('F Y') }}</small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-4 pt-0">
+                <div class="d-flex flex-column gap-2">
+                    <div class="p-2 rounded-4 bg-emerald bg-opacity-10 d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-check-circle-fill text-emerald small"></i>
+                            <div class="fw-bold text-dark" style="font-size: 11px;">Hadir</div>
+                        </div>
+                        <h5 class="fw-extrabold text-emerald mb-0">{{ $monthly_hadir }}</h5>
+                    </div>
+                    <div class="p-2 rounded-4 bg-amber bg-opacity-10 d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-clock-fill text-amber small"></i>
+                            <div class="fw-bold text-dark" style="font-size: 11px;">Telat</div>
+                        </div>
+                        <h5 class="fw-extrabold text-amber mb-0">{{ $monthly_terlambat }}</h5>
+                    </div>
+                    <div class="p-2 rounded-4 bg-primary bg-opacity-10 d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-book-fill text-primary small"></i>
+                            <div class="fw-bold text-dark" style="font-size: 11px;">Mapel</div>
+                        </div>
+                        <h5 class="fw-extrabold text-primary mb-0">{{ $total_mapel }}</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+{{-- Quick Actions --}}
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm bg-white">
+            <div class="card-header border-0 bg-transparent p-4">
+                <div class="d-flex align-items-center">
+                    <div class="bg-indigo bg-opacity-10 p-2 rounded-4 me-3">
+                        <i class="bi bi-lightning-charge-fill text-indigo fs-4"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-0 fw-extrabold text-dark">Aksi Cepat</h5>
+                        <small class="text-muted fw-medium">Akses menu utama dengan cepat</small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-4 pt-0">
+                <div class="row g-3">
+                    @php
+                        $actions = [
+                            ['Data Guru', 'bi-person-badge-fill', 'primary', route('guru.index'), 'Kelola data guru'],
+                            ['Data Siswa', 'bi-mortarboard-fill', 'indigo', route('siswa.index'), 'Kelola data siswa'],
+                            ['Data Kelas', 'bi-layers-fill', 'emerald', route('rombongan-belajar.index'), 'Kelola rombongan belajar'],
+                            ['Tahun Ajar', 'bi-calendar3-range-fill', 'amber', route('tahun_ajar.index'), 'Atur tahun ajaran'],
+                            ['Mata Pelajaran', 'bi-book-fill', 'primary', route('mata-pelajaran.index'), 'Kelola mapel'],
+                            ['Jadwal', 'bi-calendar-week-fill', 'indigo', route('jadwal-pelajaran.index'), 'Kelola jadwal'],
+                        ];
+                    @endphp
+                    @foreach($actions as $act)
+                    <div class="col-xl-3 col-md-4 col-6">
+                        <a href="{{ $act[3] }}" class="quick-action-card d-flex align-items-center gap-3 p-3 rounded-4 text-decoration-none border hover-up-premium" style="transition: all 0.3s ease;">
+                            <div class="icon-box-sm bg-{{ $act[2] }}-soft text-{{ $act[2] }}">
+                                <i class="bi {{ $act[1] }}"></i>
                             </div>
                             <div>
-                                <h5 class="mb-0 fw-extrabold text-dark">Prestasi Baru</h5>
-                                <small class="text-muted fw-medium">Input poin prestasi terbaru</small>
+                                <div class="fw-bold text-dark small">{{ $act[0] }}</div>
+                                <div class="text-muted" style="font-size: 10px;">{{ $act[4] }}</div>
                             </div>
-                        </div>
+                        </a>
                     </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0 border-0">
-                                <tbody>
-                                    @php $recent_prestasi = \App\Models\Prestasi::with('siswa')->latest()->take(5)->get(); @endphp
-                                    @forelse($recent_prestasi as $pr)
-                                    <tr>
-                                        <td class="ps-4 py-3">
-                                            <div class="d-flex align-items-center">
-                                                <div class="avatar-circle-sm bg-light text-emerald fw-extrabold me-3">{{ substr($pr->siswa->nama ?? 'S', 0, 1) }}</div>
-                                                <div>
-                                                    <div class="fw-bold text-dark small ls-tight">{{ Str::limit($pr->siswa->nama ?? 'Siswa', 25) }}</div>
-                                                    <div class="text-muted mt-1" style="font-size: 10px;"><i class="bi bi-clock me-1"></i>{{ $pr->created_at->diffForHumans() }}</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td><span class="badge bg-emerald-soft text-emerald border-0 fw-bold small">{{ Str::limit($pr->nama_prestasi, 18) }}</span></td>
-                                        <td class="pe-4 text-end">
-                                            <span class="text-emerald fw-extrabold small fs-6">+{{ $pr->poin }}</span>
-                                        </td>
-                                    </tr>
-                                    @empty
-                                    <tr><td colspan="3" class="text-center py-5 text-muted small fw-bold">Belum ada prestasi</td></tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                    @endforeach
                 </div>
             </div>
         </div>
@@ -176,11 +230,15 @@
     .hero-bg-accent { position: absolute; top: -50%; right: -10%; width: 500px; height: 500px; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); border-radius: 50%; }
     .glass-card-premium { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); }
     
-    .hover-up-premium:hover { transform: translateY(-10px); box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.1) !important; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-    .icon-box-premium { width: 48px; height: 48px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
-    .badge-growth { padding: 4px 10px; border-radius: 10px; font-size: 10px; font-weight: 800; }
+    .hover-up-premium:hover { transform: translateY(-6px); box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.08) !important; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    .icon-box-premium { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+    .icon-box-sm { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
     .card-footer-mini { height: 4px; width: 100%; border-radius: 0 0 4px 4px; opacity: 0.3; }
+    .rank-badge { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; flex-shrink: 0; }
 
+    .bg-info { background-color: #06b6d4 !important; }
+    .bg-info-soft { background-color: #ecfeff; }
+    .text-info { color: #06b6d4 !important; }
     .bg-indigo { background-color: #6366f1; }
     .bg-indigo-soft { background-color: #eef2ff; }
     .text-indigo { color: #6366f1; }
@@ -193,22 +251,83 @@
     .bg-amber { background-color: #f59e0b; }
     .bg-amber-soft { background-color: #fffbeb; }
     .text-amber { color: #f59e0b; }
+    .bg-primary-soft { background-color: #eff6ff; }
 
-    .qr-control-box { transition: all 0.4s ease; border: 1px solid var(--border-color); }
-    .qr-session-morning { background: linear-gradient(135deg, #fff9f0, #ffffff); }
-    .qr-session-afternoon { background: linear-gradient(135deg, #f0f4ff, #ffffff); }
-    .session-icon-box { width: 80px; height: 80px; border-radius: 24px; background: white; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; }
-    
-    .btn-session { padding: 18px; border-radius: 20px; border: 2px solid #f1f5f9; background: #f8fafc; color: #64748b; font-weight: 800; text-decoration: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-    .btn-session:hover { background: #f1f5f9; color: var(--deep-blue); transform: scale(1.02); }
-    .btn-session.active.morning { border-color: var(--primary-blue); background: var(--primary-blue); color: white; box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2); }
-    .btn-session.active.afternoon { border-color: var(--amber); background: var(--amber); color: white; box-shadow: 0 10px 20px rgba(245, 158, 11, 0.2); }
-
-    .btn-view-all { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--primary-blue); text-decoration: none; padding: 8px 16px; border-radius: 12px; background: var(--light-blue); }
-    .btn-view-all:hover { filter: brightness(0.95); }
     .avatar-circle-sm { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+    .chart-bar-wrapper:hover .chart-bar { filter: brightness(1.15); transform: scaleY(1.05); transform-origin: bottom; }
+
+    .quick-action-card:hover { background: #f8fafc; border-color: transparent !important; }
 
     .pulse { animation: pulseSmall 2s infinite; }
     @keyframes pulseSmall { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
 </style>
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    /**
+     * Inisialisasi Grafik Radar untuk Performa Global (Admin)
+     * Menggunakan format angka yang aman untuk JavaScript (titik sebagai desimal)
+     */
+    function inisialisasiGrafikRadarAdmin() {
+        const elemenCanvas = document.getElementById('radarChartAdmin');
+        if (!elemenCanvas) return;
+
+        // Pastikan Chart.js sudah dimuat
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js tidak ditemukan. Pastikan koneksi internet stabil.');
+            return;
+        }
+
+        const labelsRadar = [
+            @foreach($radar_data as $rd)
+            '{{ addslashes($rd->label) }}',
+            @endforeach
+        ];
+
+        const dataRadar = [
+            @foreach($radar_data as $rd)
+            {{ number_format((float)$rd->value, 2, '.', '') }},
+            @endforeach
+        ];
+
+        new Chart(elemenCanvas, {
+            type: 'radar',
+            data: {
+                labels: labelsRadar,
+                datasets: [{
+                    label: 'Rata-rata Global',
+                    data: dataRadar,
+                    fill: true,
+                    backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                    borderColor: 'rgb(99, 102, 241)',
+                    pointBackgroundColor: 'rgb(99, 102, 241)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgb(99, 102, 241)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                elements: { line: { borderWidth: 3 } },
+                scales: {
+                    r: {
+                        angleLines: { display: true },
+                        suggestedMin: 0,
+                        suggestedMax: 5,
+                        ticks: { stepSize: 1, display: false }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        inisialisasiGrafikRadarAdmin();
+    });
+</script>
+@endpush
 @endsection

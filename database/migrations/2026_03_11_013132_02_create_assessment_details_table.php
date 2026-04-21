@@ -1,0 +1,22 @@
+<?php
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::create('assessment_details', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('assessment_id')->constrained('assessments')->onDelete('cascade');
+            $table->foreignId('category_id')->constrained('assessment_categories')->onDelete('cascade');
+            $table->decimal('score', 5, 2); // Menggunakan decimal agar bisa menampung nilai seperti 4.50
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('assessment_details');
+    }
+};

@@ -1,0 +1,3 @@
+﻿id	hari	tanggal
+1	Senin	NULL
+2	Senin	NULL

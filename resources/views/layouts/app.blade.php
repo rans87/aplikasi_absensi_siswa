@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,10 +11,15 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <!-- OverlayScrollbars -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.3.0/styles/overlayscrollbars.min.css">
     <!-- AdminLTE v4 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0-beta2/dist/css/adminlte.min.css">
+    <!-- Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
 
     <style>
         :root {
@@ -33,12 +38,21 @@
             --amber: #f59e0b;
         }
 
+        html {
+            background-color: var(--deep-blue) !important;
+        }
+
         body {
             font-family: 'Outfit', 'Inter', sans-serif;
             background-color: var(--bg-gray);
             color: #1e293b;
             overflow-x: hidden;
             letter-spacing: -0.01em;
+        }
+
+        /* Force 24-hour time inputs */
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.5);
         }
 
         /* High Performance Layout */
@@ -60,6 +74,12 @@
             background: var(--deep-blue) !important;
             border-right: none !important;
             box-shadow: 10px 0 30px rgba(0,0,0,0.1) !important;
+        }
+
+        .app-sidebar .sidebar-wrapper {
+            height: calc(100vh - 130px) !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
         }
 
         .sidebar-brand {
@@ -187,13 +207,64 @@
         .app-main {
             padding: 3rem !important;
             background-color: var(--bg-gray);
+            min-height: calc(100vh - 120px);
+        }
+
+        @media (max-width: 991.98px) {
+            .app-main {
+                padding: 1.5rem 1rem !important;
+            }
+            .sidebar-expand-lg .app-header {
+                padding: 0.25rem 0 !important;
+            }
         }
 
         @media (max-width: 768px) {
             .app-main {
-                padding: 1.5rem 1rem !important;
+                padding: 1rem 0.5rem !important;
+            }
+            h1.display-4, .display-4 { font-size: 2.25rem !important; }
+            h1.display-5, .display-5 { font-size: 1.75rem !important; }
+            h1.display-6, .display-6 { font-size: 1.5rem !important; }
+            .card { border-radius: 20px !important; }
+            .card-body { padding: 1.25rem !important; }
+            .btn { padding: 10px 18px !important; font-size: 0.85rem !important; }
+            .container-fluid { padding-left: 0.5rem !important; padding-right: 0.5rem !important; }
+            
+            /* Table responsiveness fix */
+            .table-responsive {
+                border-radius: 16px;
+                border: 1px solid var(--border-color);
+                margin-bottom: 1rem;
+            }
+            .table thead th {
+                padding: 1.25rem 1rem !important;
+            }
+            .table tbody td {
+                padding: 1.25rem 1rem !important;
             }
         }
+
+        @media (max-width: 576px) {
+            h1.display-4, .display-4 { font-size: 1.85rem !important; }
+            h1.display-5, .display-5 { font-size: 1.5rem !important; }
+            .h4-mobile { font-size: 1.25rem !important; }
+            .app-main { padding: 0.75rem 0.25rem !important; }
+            .card { border-radius: 16px !important; }
+            .nav-link { margin: 4px 8px !important; padding: 10px 12px !important; }
+            .btn-lg { padding: 12px 20px !important; font-size: 0.9rem !important; }
+            .sidebar-brand { padding: 1.5rem 1rem !important; }
+            .brand-text { font-size: 1.5rem !important; }
+        }
+
+        /* Prevent horizontal overflow on mobile */
+        .row { --bs-gutter-x: 1rem; }
+        @media (max-width: 576px) {
+            .row { --bs-gutter-x: 0.75rem; }
+        }
+
+        /* Ensure images and QR are responsive */
+        img, svg { max-width: 100%; height: auto; }
 
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -215,6 +286,29 @@
         .hover-up:hover {
             transform: translateY(-8px) scale(1.01);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Color Utilities */
+        .bg-primary-soft { background-color: rgba(37, 99, 235, 0.1) !important; color: #2563eb !important; }
+        .bg-emerald-soft { background-color: rgba(16, 185, 129, 0.1) !important; color: #059669 !important; }
+        .bg-rose-soft { background-color: rgba(225, 29, 72, 0.1) !important; color: #e11d48 !important; }
+        .bg-amber-soft { background-color: rgba(245, 158, 11, 0.1) !important; color: #d97706 !important; }
+        .bg-info-soft { background-color: rgba(14, 165, 233, 0.1) !important; color: #0284c7 !important; }
+        .bg-warning-soft { background-color: rgba(245, 158, 11, 0.15) !important; color: #9a3412 !important; }
+        .bg-indigo-soft { background-color: rgba(79, 70, 229, 0.1) !important; color: #4f46e5 !important; }
+
+        .text-emerald { color: #059669 !important; }
+        .text-rose { color: #e11d48 !important; }
+        .text-amber { color: #d97706 !important; }
+        .text-info { color: #0284c7 !important; }
+        .text-warning { color: #9a3412 !important; }
+        .text-emerald { color: #10b981 !important; }
+
+        .pulse { animation: pulseSmall 2s infinite; }
+        @keyframes pulseSmall { 
+            0% { transform: scale(1); opacity: 1; } 
+            50% { transform: scale(1.1); opacity: 0.8; } 
+            100% { transform: scale(1); opacity: 1; } 
         }
     </style>
 
@@ -247,21 +341,29 @@
             </div>
         </main>
 
-        <footer class="app-footer bg-white border-top py-4 text-center">
+        <footer class="app-footer border-0 py-4 text-center" style="background: var(--deep-blue) !important; margin: 0 !important;">
             <div class="container">
-                <span class="text-muted fw-medium"><strong>PresenceX</strong> &copy; 2024. Crafted for Excellence.</span>
+                <span class="fw-medium" style="color: rgba(255,255,255,0.5);"><strong style="color: rgba(255,255,255,0.8);">PresenceX</strong> &copy; 2024. Crafted for Excellence.</span>
             </div>
         </footer>
     </div>
 
     <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.3.0/browser/overlayscrollbars.browser.es6.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0-beta2/dist/js/adminlte.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <script>
+        $(document).ready(function() {
+            $('.select2').select2({
+                theme: 'bootstrap-5',
+                width: '100%'
+            });
+        });
         function confirmLogout() {
             Swal.fire({
                 title: 'Konfirmasi Keluar',

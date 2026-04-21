@@ -1,7 +1,11 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use App\Models\Guru;
 use Illuminate\Http\Request;
 
@@ -16,8 +20,9 @@ class GuruController extends Controller
                 ->orWhere('nip', 'like', "%{$search}%")
                 ->orWhere('email', 'like', "%{$search}%");
         })
+            ->select('id', 'nama', 'nip', 'email', 'jenis_kelamin', 'no_hp')
             ->latest()
-            ->paginate(10)
+            ->paginate(15)
             ->withQueryString();
 
         return view('guru.index', compact('guru'));
@@ -35,7 +40,6 @@ class GuruController extends Controller
             'nip' => 'nullable|string|max:50|unique:guru,nip',
             'no_hp' => 'nullable|string|max:20',
             'email' => 'required|email|unique:guru,email',
-            'password' => 'required|min:6'
         ]);
 
         Guru::create([
@@ -43,10 +47,10 @@ class GuruController extends Controller
             'nip' => $request->nip,
             'no_hp' => $request->no_hp,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => '12345678',
         ]);
 
-        return redirect()->route('guru.index')->with('success', 'Guru berhasil ditambahkan!');
+        return redirect()->route('guru.index')->with('success', 'Guru berhasil ditambahkan! Password default: 12345678');
     }
 
     public function edit(Guru $guru)
@@ -65,7 +69,7 @@ class GuruController extends Controller
 
         if ($request->filled('password')) {
             $request->validate(['password' => 'min:6']);
-            $validated['password'] = Hash::make($request->password);
+            $validated['password'] = $request->password;
         }
 
         $guru->update($validated);
@@ -79,8 +83,74 @@ class GuruController extends Controller
         return redirect()->route('guru.index')->with('success', 'Data guru berhasil dihapus!');
     }
 
-    public function show($id)
+    public function show(Guru $guru)
     {
-        abort(404);
+        // Load related data for profile view
+        $guru->loadCount(['jadwalPelajaran']);
+        $guru->load('kelasWali:id,nama_kelas,jurusan,wali_kelas_id');
+        
+        return view('guru.show', compact('guru'));
+    }
+
+    public function syncApi()
+    {
+        $url = config('app.api_guru_url', env('API_GURU_URL'));
+
+        try {
+            $response = Http::timeout(60)->get($url);
+
+            if (!$response->successful()) {
+                return back()->with('error', 'Gagal mengambil data dari API (Server Sibuk/Error)');
+            }
+
+            $result = $response->json();
+            $dataGuru = $result['data'] ?? $result;
+
+            if (!is_array($dataGuru)) {
+                return back()->with('error', 'Format data API tidak sesuai');
+            }
+
+            $count = 0;
+            
+            // Use DB transaction for batch operations
+            DB::transaction(function () use ($dataGuru, &$count) {
+                foreach ($dataGuru as $item) {
+                    $nip = $item['nip'] ?? null;
+                    if (is_string($nip) && trim($nip) === '') {
+                        $nip = null;
+                    }
+                    
+                    if (!$nip) continue;
+
+                    $nama = $item['nama'] ?? 'Tanpa Nama';
+                    $sanitizedName = preg_replace('/[^a-zA-Z0-9]/', '', strtolower($nama));
+                    $email = $item['email'] ?? ($sanitizedName . '@gmail.com');
+
+                    Guru::updateOrCreate(
+                        ['nip' => $nip], 
+                        [
+                            'email' => $email,
+                            'external_guru_id' => $item['guru_id'] ?? null,
+                            'nama' => $nama,
+                            'nuptk' => $item['nuptk'] ?? null,
+                            'nik' => $item['nik'] ?? null,
+                            'jenis_kelamin' => $item['jenis_kelamin'] ?? 'L',
+                            'tempat_lahir' => $item['tempat_lahir'] ?? null,
+                            'tanggal_lahir' => $item['tanggal_lahir'] ?? null,
+                            'no_hp' => $item['no_hp'] ?? null,
+                            'alamat' => $item['alamat'] ?? null,
+                            'foto' => $item['photo'] ?? null,
+                            'password' => Hash::make('12345678'), 
+                        ]
+                    );
+                    $count++;
+                }
+            });
+
+            return back()->with('success', "Berhasil sinkronisasi $count data guru dari API.");
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Koneksi API Gagal: ' . $e->getMessage());
+        }
     }
 }
